@@ -1,0 +1,9 @@
+config-paths {{
+    config-path-home "/etc/nixos/home/home.nix"
+    config-path-system "/etc/nixos/modules/packages.nix"
+    path-home-manager "{}"
+}}
+config-markers {{
+    marker-home "home.packages = with pkgs; ["
+    marker-system "environment.systemPackages = with pkgs; ["
+}}
