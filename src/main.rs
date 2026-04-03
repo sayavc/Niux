@@ -11,7 +11,7 @@ fn main() {
     let action = args.action();
     handle(&target, &args);
     let package = Package {
-        name: args.package.unwrap(),
+        name: args.package.unwrap_or_default(),
         is_system: matches!(target, Target::System),
         rebuild: args.apply, };
     dispatch(&action, &package);

@@ -5,11 +5,16 @@ use crate::utils::get_home_dir;
 impl AutoGenNiuxConfig {
     pub fn create(&self) {
         let config_dir = get_home_dir().join(".local/share/niux");
+        fs::create_dir_all(&config_dir).unwrap_or_else(|e| {
+            println!("failed to create dir: {e}");
+            process::exit(1);
+        });
         let content = format!(include_str!("../assets/autogen_config.kdl"), self.config_path.display());
         fs::write(config_dir.join("niux_autogen.kdl"), content).unwrap_or_else(|e| {
             println!("failed: {e}");
             process::exit(1);
-        })
+        });
+        process::exit(0);
     }
     fn exist_child() {
         let cfg = AutoGenNiuxConfig { config_path: "/etc/niux.kdl".into() };
@@ -17,6 +22,7 @@ impl AutoGenNiuxConfig {
     }
     pub fn exist() {
         let path = Self::get().unwrap_or_else(|| {
+            println!("autogen not found, creating");
             Self::exist_child();
             process::exit(0);
         });
@@ -27,10 +33,7 @@ impl AutoGenNiuxConfig {
     }
     pub fn get() -> Option<AutoGenNiuxConfig> {
         let content = fs::read_to_string(get_home_dir()
-            .join(".local/share/niux_autogen.kdl")).unwrap_or_else(|e| {
-            println!("failed: {e}");
-            process::exit(1);
-        });
+            .join(".local/share/niux/niux_autogen.kdl")).ok()?;
         knuffel::parse::<AutoGenNiuxConfig>("niux_autogen.kdl", &content).ok()
     }
 }

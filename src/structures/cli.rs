@@ -1,9 +1,9 @@
 use clap::Parser;
 #[derive(Parser)]
 pub struct Args {
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "uninstall", "apply", "package_name", "default_path_config"])]
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "uninstall", "apply", "package", "default_path_config"])]
     pub gen_config: bool,
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "uninstall", "apply", "package_name", "gen_config"])]
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "uninstall", "apply", "package", "gen_config"])]
     pub default_path_config: Option<std::path::PathBuf>,
     #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config"])]
     pub home: bool,
@@ -16,6 +16,4 @@ pub struct Args {
     #[arg(short = 'a')]
     pub apply: bool,
     pub package: Option<Vec<String>>,
-    #[arg(conflicts_with_all = ["gen_config", "home", "system", "install", "uninstall", "apply", "package_name"])]
-    pub edit_func: Option<String>,
 }

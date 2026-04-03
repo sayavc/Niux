@@ -1,3 +1,4 @@
+use std::process;
 use crate::ops::*;
 use crate::utils::nixos::*;
 use crate::structures::{ Args, Package }; 
@@ -31,17 +32,17 @@ pub fn dispatch(action: &Action, package: &Package ) {
     }
 }
 pub fn handle(target: &Target, args: &Args) {
-    AutoGenNiuxConfig::exist();
     if args.package.is_some() && !args.install && !args.uninstall { exit_eargs() }
     if args.gen_config { NiuxConfig::create() }
     if let Some(path) = args.default_path_config.clone() {
         AutoGenNiuxConfig { config_path: path }.create();
     }
+    AutoGenNiuxConfig::exist();
     if matches!(args.action(), Action::None) && args.apply {
         match target {
-            Target::System => NiuxConfig::rebuild_system(),
-            Target::Home => NiuxConfig::rebuild_home(),
-            Target::Both => { NiuxConfig::rebuild_system(); NiuxConfig::rebuild_home(); }
+            Target::System => { NiuxConfig::rebuild_system(); process::exit(0); }
+            Target::Home => {NiuxConfig::rebuild_home(); process::exit(0); }
+            Target::Both => { NiuxConfig::rebuild_system(); NiuxConfig::rebuild_home(); process::exit(0); }
             Target::None => exit_eargs(),
         }
     }  
