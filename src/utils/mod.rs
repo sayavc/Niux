@@ -1,7 +1,8 @@
 pub mod utils;
-pub use utils::run_bash;
-pub use utils::exit_eargs;
-pub use utils::user_input;
-pub use utils::write_changes_to_config;
-pub use utils::rebuild_nixos_config_home;
-pub use utils::rebuild_nixos_config_system;
+pub mod nixos;
+pub mod args_handler;
+pub mod privilege;
+pub use nixos::*;
+pub use utils::*;
+pub use privilege::*;
+pub use args_handler::*;

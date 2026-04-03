@@ -7,3 +7,6 @@ config-markers {{
     marker-home "home.packages = with pkgs; ["
     marker-system "environment.systemPackages = with pkgs; ["
 }}
+config-security {{
+    su-type "{}"
+}}

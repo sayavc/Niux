@@ -1,21 +1,22 @@
 use std::fs;
-use crate::utils::{write_changes_to_config, rebuild_nixos_config_home, rebuild_nixos_config_system};
-use crate::config::get_config_value;
+use crate::utils::write_changes_to_config;
+use crate::structures::NiuxConfig;
 use crate::structures::{ Package };
 impl Package {
-pub fn install(&self) {
+    pub fn install(&self) {
+    let config = NiuxConfig::get();
     let config_path = { 
         if self.is_system {
-            get_config_value().config_paths.config_path_system
+            config.config_paths.config_path_system
         } else {
-        get_config_value().config_paths.config_path_home 
+        config.config_paths.config_path_home 
         }
     };
     let config_marker = {
-        if self.is_system {
-            get_config_value().config_markers.marker_system  
+        if self.is_system { 
+            config.config_markers.marker_system  
         } else {
-            get_config_value().config_markers.marker_home
+            config.config_markers.marker_home
         }
     };
 
@@ -35,9 +36,9 @@ pub fn install(&self) {
     write_changes_to_config(&config_path, &new_content);
     println!("package add to config");
     match (self.rebuild, self.is_system) {
-        (true, false) => rebuild_nixos_config_home(),
-        (true, true) => rebuild_nixos_config_system(),
+        (true, false) => NiuxConfig::rebuild_home(),
+        (true, true) => NiuxConfig::rebuild_system(),
         _ => std::process::exit(0),
     }
-}
+    }
 }
