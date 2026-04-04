@@ -13,14 +13,11 @@ fn privilege_type(nya: &str) -> String {
     }
 }
 pub fn get_privilege_type() -> String {
-    if privilege_type("sudo").is_empty() {
-        if privilege_type("doas").is_empty() {
-            println!("unknown privilege type");
-            std::process::exit(1);
-        } else {
-            "doas".to_string()
+    for su in &["doas", "sudo", "run0", "pkexec"] {
+        if !privilege_type(su).is_empty() {
+            return su.to_string();
         }
-    } else {
-        "sudo".to_string()
     }
+    eprintln!("unknown privilege type");
+    std::process::exit(1);
 }

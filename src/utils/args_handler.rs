@@ -33,12 +33,11 @@ pub fn dispatch(action: &Action, package: &Package ) {
 }
 pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::Error>> {
     if args.package.is_some() && !args.install && !args.uninstall { return Err("Invalid arguments".into()) }
-    if args.gen_config { NiuxConfig::create()?; return Ok(true); }
+    if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone())?; NiuxConfig::create()?; return Ok(true); }
     if let Some(path) = args.default_path_config.clone() {
-        AutoGenNiuxConfig { config_path: path }.create();
+        AutoGenNiuxConfig::create(Some(path))?;
         return Ok(true);
     }
-    AutoGenNiuxConfig::exist();
     if matches!(args.action(), Action::None) && args.apply {
         match target {
             Target::System => NiuxConfig::rebuild_system(),
@@ -48,5 +47,5 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
         }
         return Ok(true);
     }  
-    return Ok(false);
+    Ok(false)
 }

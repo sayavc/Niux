@@ -1,5 +1,6 @@
 use clap::Parser;
 #[derive(Parser)]
+#[command(about = "A simple CLI tool for managing NixOS packages")]
 pub struct Args {
     #[arg(long, conflicts_with_all = ["home", "system", "install", "uninstall", "apply", "package", "default_path_config"])]
     pub gen_config: bool,

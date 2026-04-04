@@ -24,7 +24,7 @@ impl Package {
         }
     }
     let new_content = lines.join("\n");
-    write_changes_to_config(&config_path, &new_content);
+    write_changes_to_config(&new_content, &config_path);
     println!("package add to config");
     match (self.rebuild, self.is_system) {
         (true, false) => NiuxConfig::rebuild_home(),
