@@ -5,19 +5,16 @@ use crate::utils::{run_bash, get_privilege_type, user_input };
 use crate::structures::{ NiuxConfig };
 
 impl NiuxConfig {
-    pub fn create() {
-        let cfg = AutoGenNiuxConfig::get().unwrap_or_else(|| {
-            println!("Failed to get config path");
-            process::exit(1);
-        }); 
+    pub fn create() -> Result<(), Box<dyn std::error::Error>>  {
+        let cfg = AutoGenNiuxConfig::get().ok_or("Failed to get config path")?; 
         if cfg.config_path.exists() { 
             println!("Config is exists, rewrite? y/n");
             if user_input().trim() == "n" { process::exit(0); }
         }  
         let home_manager_path = run_bash(&["which", "home-manager"]);
         let default_config = format!(include_str!("../assets/default_config.kdl"), home_manager_path, get_privilege_type());
-        fs::write(cfg.config_path, default_config).unwrap();
-        process::exit(0);
+        fs::write(cfg.config_path, default_config)?;
+        Ok(())
     }
     pub fn get() -> NiuxConfig {
         let cfg = AutoGenNiuxConfig::get().unwrap_or_else(|| {

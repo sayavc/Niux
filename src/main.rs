@@ -9,7 +9,11 @@ fn main() {
     let args = Args::parse();
     let target = args.target();
     let action = args.action();
-    handle(&target, &args);
+    match handle(&target, &args) { 
+        Ok(true) => return,
+        Ok(false) => {},
+        Err(e) => { eprintln!("error: {e}"); std::process::exit(1); }
+    }
     let package = Package {
         name: args.package.unwrap_or_default(),
         is_system: matches!(target, Target::System),

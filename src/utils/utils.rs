@@ -3,7 +3,7 @@ use tempfile::NamedTempFile;
 use crate::structures::NiuxConfig;
 pub fn exit_eargs() {
     println!("incorrect arguments");
-    process::exit(0);
+    process::exit(2);
 }
 pub fn run_bash(args: &[&str]) -> String {
     let first = if args[0] == "sudo" { NiuxConfig::get().config_security.su_type }
@@ -12,9 +12,8 @@ pub fn run_bash(args: &[&str]) -> String {
         .args(&args[1..])
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .output()
-        .unwrap();
-        let result = String::from_utf8(result.stdout).unwrap().trim().to_string();
-        result
+        .unwrap_or_else(|e| { eprintln!("Failed: {e}"); process::exit(1); });
+        String::from_utf8(result.stdout).unwrap().trim().to_string()
     }
 pub fn write_changes_to_config(config_path: &str, content: &str) {
     let tmp = NamedTempFile::new().unwrap();
@@ -25,11 +24,11 @@ pub fn user_input() -> String {
     let mut user_input = String::new();
     std::io::stdin()
         .read_line(&mut user_input)
-        .unwrap();
+        .unwrap_or_else(|e| { eprintln!("Failed: {e}"); process::exit(1); });
     user_input
 }
 pub fn get_home_dir() -> std::path::PathBuf {
-let path = dirs::home_dir()
-    .expect("no home dir");
-    path
+dirs::home_dir().unwrap_or_else(|| {
+    eprintln!("home directory is not exists"); process::exit(1);
+})
 }

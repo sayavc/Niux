@@ -31,19 +31,22 @@ pub fn dispatch(action: &Action, package: &Package ) {
         Action::None => exit_eargs(),
     }
 }
-pub fn handle(target: &Target, args: &Args) {
-    if args.package.is_some() && !args.install && !args.uninstall { exit_eargs() }
-    if args.gen_config { NiuxConfig::create() }
+pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::Error>> {
+    if args.package.is_some() && !args.install && !args.uninstall { return Err("Invalid arguments".into()) }
+    if args.gen_config { NiuxConfig::create()?; return Ok(true); }
     if let Some(path) = args.default_path_config.clone() {
         AutoGenNiuxConfig { config_path: path }.create();
+        return Ok(true);
     }
     AutoGenNiuxConfig::exist();
     if matches!(args.action(), Action::None) && args.apply {
         match target {
-            Target::System => { NiuxConfig::rebuild_system(); process::exit(0); }
-            Target::Home => {NiuxConfig::rebuild_home(); process::exit(0); }
-            Target::Both => { NiuxConfig::rebuild_system(); NiuxConfig::rebuild_home(); process::exit(0); }
+            Target::System => NiuxConfig::rebuild_system(),
+            Target::Home => NiuxConfig::rebuild_home(),
+            Target::Both => NiuxConfig::rebuild_system(), 
             Target::None => exit_eargs(),
         }
+        return Ok(true);
     }  
+    return Ok(false);
 }

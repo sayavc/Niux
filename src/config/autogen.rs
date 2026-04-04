@@ -3,18 +3,12 @@ use std::fs;
 use std::process;
 use crate::utils::get_home_dir;
 impl AutoGenNiuxConfig {
-    pub fn create(&self) {
+    pub fn create(&self) -> Result<(), Box<dyn std::error::Error>> {
         let config_dir = get_home_dir().join(".local/share/niux");
-        fs::create_dir_all(&config_dir).unwrap_or_else(|e| {
-            println!("failed to create dir: {e}");
-            process::exit(1);
-        });
+        fs::create_dir_all(&config_dir)?;
         let content = format!(include_str!("../assets/autogen_config.kdl"), self.config_path.display());
-        fs::write(config_dir.join("niux_autogen.kdl"), content).unwrap_or_else(|e| {
-            println!("failed: {e}");
-            process::exit(1);
-        });
-        process::exit(0);
+        fs::write(config_dir.join("niux_autogen.kdl"), content)?;
+        Ok(())
     }
     fn exist_child() {
         let cfg = AutoGenNiuxConfig { config_path: "/etc/niux.kdl".into() };
