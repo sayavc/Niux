@@ -1,4 +1,5 @@
 use std::fs;
+use colored::Colorize;
 use crate::structures::AutoGenNiuxConfig;
 use crate::utils::writer_write;
 use std::process;
@@ -15,6 +16,7 @@ impl NiuxConfig {
         let default_config = format!(include_str!("../assets/default_config.kdl"), get_privilege_type());
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), default_config)?;
+        println!("Create config in {}", cfg.config_path.to_string_lossy().green());
         writer_write(tmp.path().to_str().unwrap(), cfg.config_path.to_str().unwrap());  
         Ok(())
     }

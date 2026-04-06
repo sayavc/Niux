@@ -1,7 +1,15 @@
 # Niux
+**English** | [Русский](./ru/README.md)
+
+<img align='right' src='assets/icon.png' width='260px' alt="niux logo"/>
+
 
 Declarative NixOS/home-manager CLI package manager written in Rust.
+Tired of editing 'configuration.nix' every time you need a package? Niux lets you manage packages with short commands. 
 
+[![Release](https://img.shields.io/github/v/release/sayavc/niux?label=Release&logo=github&color=7aa2f7)](https://github.com/sayavc/niux/releases/latest) 
+[![License](https://img.shields.io/badge/License-GPL%20v3-bb9af7.svg?logo=gnu)](LICENSE) 
+[![Language](https://img.shields.io/badge/language-Rust-orange?logo=rust)](https://www.rust-lang.org) 
 ## Why Niux?
 
 Working with `home-manager` and `NixOS` is powerful, but constantly editing configuration files and running `switch` can feel tedious.
@@ -59,6 +67,10 @@ niux --gen-config
 Or at a custom path:
 ```bash
 niux --gen-config --default-path-config ~/my/path/niux.kdl
+```
+To display the path:
+```bash
+niux --get-current-path
 ```
 
 > **Note:** `--default-path-config` requires an existing `.kdl` file. Always run `--gen-config` first.

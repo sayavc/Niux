@@ -19,6 +19,9 @@ pub struct Args {
         help = "Set default configuration path")]
     pub default_path_config: Option<std::path::PathBuf>,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
+        help = "Displays current path")]
+    pub get_currect_path: bool,
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
         help = "This is nix-collect-garbage")]
     pub clear: bool,
     #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config", "update", "list", "clear"],

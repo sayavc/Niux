@@ -1,3 +1,4 @@
+use colored::Colorize;
 use crate::structures::{ Args, Package }; 
 use crate::structures::AutoGenNiuxConfig;
 use crate::structures::NiuxConfig;
@@ -39,6 +40,12 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
     if let Some(path) = args.default_path_config.clone() {
         AutoGenNiuxConfig::create(Some(path))?;
         return Ok(true);
+    }
+    if args.get_currect_path {
+        match AutoGenNiuxConfig::get() {
+            Some(cfg) => println!("{}", cfg.config_path.to_string_lossy().blue()),
+            None => println!("none"),
+        }
     }
     if args.list && !args.home && !args.system && args.package.is_none() {
             Package::list_all()?;
