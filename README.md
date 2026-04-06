@@ -36,6 +36,9 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 - NixOS
 
 ## Installation
+
+## With flakes (home-manager)
+
 Add to your `flake.nix` inputs:
 
 ```nix
@@ -45,7 +48,17 @@ inputs.niux = {
 };
 ```
 
-Then add to your `home.nix`:
+Pass niux to home-manager via extraSpecialArgs:
+
+```nix 
+homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
+    pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    extraSpecialArgs = { inputs = { inherit niux; }; };
+    modules = [ ./home/home.nix ];
+};
+```
+
+Then add to your home.nix:
 
 ```nix
 { inputs, pkgs, ... }: {
@@ -56,6 +69,9 @@ Then add to your `home.nix`:
 ```
 
 Run `home-manager switch` to apply.
+
+> **Note:** Non-flake and NixOS module home-manager installation docs coming soon,
+> Contributions welcome!
 
 ## Configuration
 
@@ -81,7 +97,6 @@ niux --get-current-path
 ```bash
 niux -Hi firefox        # Install firefox for home
 niux -Si vim            # Install vim for system
-niux -HSia firefox vim  # Install both + rebuild
 
 niux -Hr firefox        # Remove firefox from home
 
@@ -102,7 +117,6 @@ niux -Si vim                # Install vim for system
 niux -Sia vim               # Install and rebuild system
 niux -Hi firefox vim        # Install multiple packages for home
 niux -Si firefox vim        # Install multiple packages for system
-niux -HSia firefox vim      # Install for both + rebuild
 
 niux -Hr firefox            # Remove firefox from home
 niux -Hra firefox           # Remove and rebuild home

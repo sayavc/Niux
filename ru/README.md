@@ -36,60 +36,75 @@
 - NixOS
 
 ## Установка
+
+## flakes (home-manager)
+
 Добавьте в `flake.nix`:
 
-\```nix
+```nix
 inputs.niux = {
     url = "github:sayavc/niux";
     inputs.nixpkgs.follows = "nixpkgs";
 };
-\```
+```
 
-Затем в `home.nix`:
+Передать niux в home-manager через extraSpecialArgs:
 
-\```nix
+```nix 
+homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
+    pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    extraSpecialArgs = { inputs = { inherit niux; }; };
+    modules = [ ./home/home.nix ];
+};
+```
+
+Добавить в home.nix:
+
+```nix
 { inputs, pkgs, ... }: {
     home.packages = [
         inputs.niux.packages.${pkgs.system}.default
     ];
 }
-\```
+```
 
 Запустите `home-manager switch` для применения.
-
+> **Примечание** Установка без flakes и с модульным home-manager появятся позже.
+> Контрибуции приветствуются!
 ## Конфигурация
 
 Сгенерируйте конфиг по умолчанию:
-\```bash
+```bash
 niux --gen-config
-\```
+```
 
 Или по своему пути:
-\```bash
+```bash
 niux --gen-config --default-path-config ~/my/path/niux.kdl
-\```
+```
 
 Показать текущий путь:
-\```bash
+```bash
 niux --get-current-path
-\```
+```
 
 > **Примечание:** `--default-path-config` требует существующего `.kdl` файла. Всегда сначала запускайте `--gen-config`.
 
 ## Использование
 
 ### Быстрый старт
-\```bash
+```bash
 niux -Hi firefox        # Установить firefox в home
 niux -Si vim            # Установить vim в system
-niux -HSia firefox vim  # Установить везде + пересборка
 niux -Hr firefox        # Удалить firefox из home
 niux -Hl                # Список пакетов home
 niux -l firefox         # Поиск везде
 niux -U                 # Обновить все флейки
 niux -USHa              # Обновить + пересобрать всё
 niux -HSa               # Пересобрать оба конфига
-\```
+```
+Смотрите [English README](../README.md) для всех комбинаций   
+
 
 ## Справка по командам
 
