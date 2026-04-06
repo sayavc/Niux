@@ -1,4 +1,5 @@
 use clap::{ Parser, Subcommand };
+use std::os::unix::fs::MetadataExt;
 use std::process;
 use std::fs;
 #[derive(Parser)]
@@ -37,6 +38,18 @@ fn create_autogen(config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 fn writer(tmp_path: &str, dest_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    if std::path::Path::new(dest_path).exists() {
+        let metadata = std::fs::symlink_metadata(dest_path);
+        if metadata?.file_type().is_symlink() {
+            let real_path = std::fs::read_link(dest_path)?;
+            let real_metadata = std::fs::metadata(&real_path)?;
+            let file_uid = real_metadata.uid();
+            let current_uid = unsafe { libc::getuid() };
+            if file_uid != current_uid {
+                return Err("Symlink points to file owned by another user".into());
+            }
+        }
+    }
     let tmp_content = fs::read_to_string(tmp_path)?;
     fs::write(dest_path, tmp_content)?;
     Ok(())

@@ -2,7 +2,7 @@ use std::fs;
 use crate::structures::AutoGenNiuxConfig;
 use crate::utils::writer_write;
 use std::process;
-use crate::utils::{run_bash, get_privilege_type, user_input };
+use crate::utils::{get_privilege_type, user_input};
 use crate::structures::{ NiuxConfig };
 
 impl NiuxConfig {
@@ -12,8 +12,7 @@ impl NiuxConfig {
             println!("Config is exists, rewrite? y/n");
             if user_input().trim() != "y" { process::exit(0); }
         }  
-        let home_manager_path = run_bash(&["which", "home-manager"]);
-        let default_config = format!(include_str!("../assets/default_config.kdl"), home_manager_path, get_privilege_type());
+        let default_config = format!(include_str!("../assets/default_config.kdl"), get_privilege_type());
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), default_config)?;
         writer_write(tmp.path().to_str().unwrap(), cfg.config_path.to_str().unwrap());  
