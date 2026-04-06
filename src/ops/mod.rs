@@ -1,4 +1,4 @@
 pub mod install;
-pub mod uninstall;
+pub mod remove;
 pub mod list;
-pub mod edit;
+pub mod nixos;

@@ -18,7 +18,7 @@ pub struct ConfigPaths {
     #[knuffel(child, unwrap(argument))]
     pub config_path_system: String,
     #[knuffel(child, unwrap(argument))]
-    pub path_home_manager: String,
+    pub path_nix_flake: String,
 }
 
 #[derive(knuffel::Decode)]
@@ -27,6 +27,10 @@ pub struct ConfigMarkers {
     pub marker_home: String,
     #[knuffel(child, unwrap(argument))]
     pub marker_system: String,
+    #[knuffel(child, unwrap(argument))]
+    pub marker_home_end: String,
+    #[knuffel(child, unwrap(argument))]
+    pub marker_system_end: String,
 }
 #[derive(knuffel::Decode)]
 pub struct ConfigSecurity {
