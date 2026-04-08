@@ -41,11 +41,12 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
         AutoGenNiuxConfig::create(Some(path))?;
         return Ok(true);
     }
-    if args.get_currect_path {
+    if args.get_current_path {
         match AutoGenNiuxConfig::get() {
             Some(cfg) => println!("{}", cfg.config_path.to_string_lossy().blue()),
             None => println!("none"),
         }
+        return Ok(true);
     }
     if args.list && !args.home && !args.system && args.package.is_none() {
             Package::list_all()?;

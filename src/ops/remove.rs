@@ -5,6 +5,10 @@ use std::fs;
 impl Package {
     pub fn remove(&self) -> Result<(), Box<dyn std::error::Error>>  {
         let config = NiuxConfig::get();
+        if !std::path::Path::new(&config.config_paths.config_path_home).exists() {
+            println!("{}", "Home config path is wrong".yellow());
+            return Ok(())
+        }
         let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
         let config_marker = if self.is_system { config.config_markers.marker_system } else { config.config_markers.marker_home };
         let config_marker_end = if self.is_system { config.config_markers.marker_system_end } else { config.config_markers.marker_home_end };
@@ -32,6 +36,10 @@ impl Package {
             }
         }
         let new_content = lines.join("\n");
+         if new_content == content {
+             println!("{}", "Package not found in config".yellow());
+            return Ok(())
+        }
         write_changes_to_config(&new_content, &config_path);
         println!("{}", "Package remove with config".green());
         match (self.rebuild, self.is_system) {
@@ -42,6 +50,3 @@ impl Package {
         Ok(())
     }
 }
-
-
-

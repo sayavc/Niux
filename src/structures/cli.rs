@@ -20,14 +20,14 @@ pub struct Args {
     pub default_path_config: Option<std::path::PathBuf>,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
         help = "Displays current path")]
-    pub get_currect_path: bool,
+    pub get_current_path: bool,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
         help = "This is nix-collect-garbage")]
     pub clear: bool,
-    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config", "update", "list", "clear"],
+    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config", "update", "list", "clear", "get_current_path"],
         help = "Manage home packages")]
     pub home: bool,
-    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "default_path_config", "update", "list", "clear"],
+    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "default_path_config", "update", "list", "clear", "get_current_path"],
         help = "Manage system packages")]
     pub system: bool,
     #[arg(short = 'i', conflicts_with_all = ["remove", "update"], 
