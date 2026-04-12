@@ -1,9 +1,10 @@
-use crate::structures::{ Package, NiuxConfig };
+use crate::structures::{ Package, NiuxConfig, HookEvent, hook_config::HookConfig };
 use crate::utils::{ write_changes_to_config };
 use colored::Colorize;
 use std::fs;
 impl Package {
     pub fn remove(&self) -> Result<(), Box<dyn std::error::Error>>  {
+        HookConfig::run(HookEvent::PreRemove)?;
         let config = NiuxConfig::get();
         if !std::path::Path::new(&config.config_paths.config_path_home).exists() {
             println!("{}", "Home config path is wrong".yellow());
@@ -42,6 +43,7 @@ impl Package {
         }
         write_changes_to_config(&new_content, &config_path);
         println!("{}", "Package remove with config".green());
+        HookConfig::run(HookEvent::PostRemove)?;
         match (self.rebuild, self.is_system) {
         (true, false) => NiuxConfig::rebuild_home()?,
         (true, true) => NiuxConfig::rebuild_system()?,

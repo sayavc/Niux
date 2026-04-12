@@ -1,7 +1,5 @@
 use colored::Colorize;
-use crate::structures::{ Args, Package }; 
-use crate::structures::AutoGenNiuxConfig;
-use crate::structures::NiuxConfig;
+use crate::structures::{AutoGenNiuxConfig, NiuxConfig, Args, Package, HookEvent, hook_config::HookConfig };
 pub enum Target { System, Home, Both, None }
 pub enum Action { Install, Remove, None }
 impl Args {
@@ -31,10 +29,12 @@ pub fn dispatch(action: &Action, package: &Package) -> Result<(), Box<dyn std::e
 }
 pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::Error>> {
     if args.package.is_some() && !args.install && !args.remove && !args.update && !args.list { return Err("Invalid arguments".into()) }
-    if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone())?; NiuxConfig::create()?; return Ok(true); }
+    if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone())?; NiuxConfig::create()?; HookConfig::create()?; return Ok(true); }
     if args.package.is_some() && args.update { 
+        HookConfig::run(HookEvent::PreUpdate)?;
         NiuxConfig::update_flake(&args.package.as_ref().unwrap()[0])?;
         rebuild(target, args)?;
+        HookConfig::run(HookEvent::PostUpdate)?;
         return Ok(true);
     }
     if let Some(path) = args.default_path_config.clone() {
@@ -49,16 +49,22 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
         return Ok(true);
     }
     if args.list && !args.home && !args.system && args.package.is_none() {
+        HookConfig::run(HookEvent::PreList)?;
             Package::list_all()?;
+        HookConfig::run(HookEvent::PostList)?;
         return Ok(true);
     }
     if args.update {
+        HookConfig::run(HookEvent::PreUpdate)?;
         NiuxConfig::update()?;
+        HookConfig::run(HookEvent::PostUpdate)?;
         rebuild(target, args)?; 
         return Ok(true);
     }
     if args.clear {
+        HookConfig::run(HookEvent::PreClear)?;
         NiuxConfig::clear()?;
+        HookConfig::run(HookEvent::PostClear)?;
         return Ok(true);
     }
     if (args.install || args.remove) && args.package.is_none() {
@@ -71,23 +77,28 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
 }
 pub fn rebuild(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::Error>> {
     if matches!(args.action(), Action::None) && args.apply {
+        HookConfig::run(HookEvent::PreRebuild)?;
         match target {
             Target::System => NiuxConfig::rebuild_system()?,
             Target::Home => NiuxConfig::rebuild_home()?,
             Target::Both => { NiuxConfig::rebuild_system()?; NiuxConfig::rebuild_home()?; } 
             Target::None => return Err("No target specified".into()),
         }
+        HookConfig::run(HookEvent::PostRebuild)?;
         return Ok(true);
     }  
     Ok(false)
 }
 pub fn list(args: &Args, package: &Package) -> Result<bool, Box<dyn std::error::Error>> {
+    HookConfig::run(HookEvent::PreList)?;
     if args.list && args.package.is_none() {
         Package::list_type(package)?;
+        HookConfig::run(HookEvent::PostList)?;
         return Ok(true); 
     }
     if args.list && args.package.is_some() {
         Package::list_do_package(package)?;
+        HookConfig::run(HookEvent::PostList)?;
         return Ok(true);
     }
     Ok(false)

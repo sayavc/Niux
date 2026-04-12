@@ -38,6 +38,10 @@ fn create_autogen(config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 fn writer(tmp_path: &str, dest_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let tmp_metadata = std::fs::metadata(tmp_path)?;
+    if tmp_metadata.uid() == 0 {
+        return Err("tmp_path must not be owned by root".into());
+    }
     if std::path::Path::new(dest_path).exists() {
         let metadata = std::fs::symlink_metadata(dest_path);
         if metadata?.file_type().is_symlink() {

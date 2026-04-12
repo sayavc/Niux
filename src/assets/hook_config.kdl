@@ -1,0 +1,13 @@
+// available actions: install remove rebuild update list clear
+// use pre and post prefix
+// example:
+/*
+actions {
+    action "post-install"
+    run "echo 'niux: package installed successfully'"
+}
+*/ 
+actions {{
+    action ""
+    run ""
+}}
