@@ -1,16 +1,19 @@
 use std::process;
 use std::fs;
+use colored::Colorize;
 use crate::structures::{ hook_config::HookConfig, models::HookEvent };
-use crate::utils::{writer_write, run_bash_interactive };
+use crate::utils::{writer_write, run_bash_interactive, user_input };
 impl HookConfig {
     pub fn create() -> Result<(), Box<dyn std::error::Error>> {
         if std::path::Path::new("/etc/niux_hooks.kdl").exists() {
-            return Ok(());
+            println!("Hooks config is exists, rewrite? y/n");
+            if user_input().trim() != "y" { return Ok(()); }
         }
         let config = include_str!("../assets/hook_config.kdl");
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), config)?;
         writer_write(tmp.path().to_str().unwrap(), "/etc/niux_hooks.kdl");
+        println!("Create config in {}", "/etc/niux_hooks.kdl".green());
         Ok(())
     }
     pub fn get() -> HookConfig {

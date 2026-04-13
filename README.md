@@ -31,6 +31,7 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 - Simple and intuitive command syntax
 - Supports both standalone and module home-manager
 - Supports NixOS with and without flakes
+- Hooks which allow to automate actions 
 
 ## Requirements
 - NixOS
@@ -158,6 +159,16 @@ niux -HSa                   # Rebuild both configs
 ### Cleanup
 ```bash
 niux --clear                # Run nix-collect-garbage
+```
+
+### Hooks 
+Check in /etc/niux_hooks.kdl 
+example:
+```kdl
+actions {
+    action "post-rebuild"
+    run "zsh /etc/niux_post_rebuild.zsh"
+}
 ```
 
 ## Commands Reference

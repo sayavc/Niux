@@ -7,7 +7,7 @@ actions {
     run "echo 'niux: package installed successfully'"
 }
 */ 
-actions {{
+actions {
     action ""
     run ""
-}}
+}

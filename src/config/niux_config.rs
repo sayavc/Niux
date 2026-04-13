@@ -10,8 +10,8 @@ impl NiuxConfig {
     pub fn create() -> Result<(), Box<dyn std::error::Error>>  {
         let cfg = AutoGenNiuxConfig::get().ok_or("Failed to get config path")?; 
         if cfg.config_path.exists() { 
-            println!("Config is exists, rewrite? y/n");
-            if user_input().trim() != "y" { process::exit(0); }
+            println!("Niux config is exists, rewrite? y/n");
+            if user_input().trim() != "y" { return Ok(()); }
         }  
         let default_config = format!(include_str!("../assets/default_config.kdl"), get_privilege_type());
         let tmp = tempfile::NamedTempFile::new()?;
