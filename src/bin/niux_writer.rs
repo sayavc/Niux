@@ -10,14 +10,14 @@ struct Cli {
 }
 #[derive(Subcommand)]
 enum Commands {
-    Init { config_path: String },
+    Init { config_path: String, hook_config_path: String },
     Write { tmp_path: String, dest_path: String },
 }
 fn main() {
 let args = Cli::parse();
 match args.command {
-    Commands::Init { config_path } => {
-        if let Err(e) = create_autogen(&config_path) {
+    Commands::Init { config_path, hook_config_path } => {
+        if let Err(e) = create_autogen(&config_path, &hook_config_path) {
             eprintln!("Failed: {e}");
             process::exit(1);
         }
@@ -30,10 +30,10 @@ match args.command {
     }
 }
 }
-fn create_autogen(config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn create_autogen(config_path: &str, hook_config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     let config_dir = std::path::Path::new("/var/lib/niux/");
     fs::create_dir_all(config_dir)?;
-    let content = format!(include_str!("../assets/autogen_config.kdl"), config_path);
+    let content = format!(include_str!("../assets/autogen_config.kdl"), config_path, hook_config_path);
     fs::write(config_dir.join("niux_autogen.kdl"), content)?;
     Ok(())
 }

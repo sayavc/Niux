@@ -37,8 +37,8 @@ pub fn run_bash(args: &[&str]) -> String {
 pub fn run_early_bash(args: &[&str]) -> String {
     bash(args, false)
 }
-pub fn writer_init(config_path: &str) {
-    run_early_bash(&["sudo", "niux-writer", "init", config_path]);
+pub fn writer_init(config_path: &str, hooks_path: &str) {
+    run_early_bash(&["sudo", "niux-writer", "init", config_path, hooks_path]);
 }
 pub fn writer_write(tmp_path: &str, dest_path: &str) {
     run_early_bash(&["sudo", "niux-writer", "write", tmp_path, dest_path]);

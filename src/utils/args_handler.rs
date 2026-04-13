@@ -29,7 +29,7 @@ pub fn dispatch(action: &Action, package: &Package) -> Result<(), Box<dyn std::e
 }
 pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::Error>> {
     if args.package.is_some() && !args.install && !args.remove && !args.update && !args.list { return Err("Invalid arguments".into()) }
-    if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone())?; NiuxConfig::create()?; HookConfig::create()?; return Ok(true); }
+    if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone(), args.default_hook_path_config.clone())?; NiuxConfig::create()?; HookConfig::create()?; return Ok(true); }
     if args.package.is_some() && args.update { 
         HookConfig::run(HookEvent::PreUpdate)?;
         NiuxConfig::update_flake(&args.package.as_ref().unwrap()[0])?;
@@ -38,12 +38,16 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
         return Ok(true);
     }
     if let Some(path) = args.default_path_config.clone() {
-        AutoGenNiuxConfig::create(Some(path))?;
+        AutoGenNiuxConfig::create(Some(path), AutoGenNiuxConfig::get().map(|c| c.hooks_config_path))?;
+        return Ok(true);
+    }
+    if let Some(path) = args.default_hook_path_config.clone() {
+        AutoGenNiuxConfig::create(AutoGenNiuxConfig::get().map(|c| c.config_path), Some(path))?;
         return Ok(true);
     }
     if args.get_current_path {
         match AutoGenNiuxConfig::get() {
-            Some(cfg) => println!("{}", cfg.config_path.to_string_lossy().blue()),
+            Some(cfg) => println!("{}\n{}", cfg.config_path.to_string_lossy().blue(), cfg.hooks_config_path.to_string_lossy()),
             None => println!("none"),
         }
         return Ok(true);

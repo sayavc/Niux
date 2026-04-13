@@ -42,4 +42,6 @@ pub struct ConfigSecurity {
 pub struct AutoGenNiuxConfig {
     #[knuffel(child, unwrap(argument))]
     pub config_path: PathBuf,
+    #[knuffel(child, unwrap(argument))]
+    pub hooks_config_path: PathBuf,
 }

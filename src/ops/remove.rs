@@ -6,11 +6,11 @@ impl Package {
     pub fn remove(&self) -> Result<(), Box<dyn std::error::Error>>  {
         HookConfig::run(HookEvent::PreRemove)?;
         let config = NiuxConfig::get();
-        if !std::path::Path::new(&config.config_paths.config_path_home).exists() {
-            println!("{}", "Home config path is wrong".yellow());
+        let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
+        if !std::path::Path::new(&config_path).exists() {
+            println!("{}", "Config path is wrong".yellow());
             return Ok(())
         }
-        let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
         let config_marker = if self.is_system { config.config_markers.marker_system } else { config.config_markers.marker_home };
         let config_marker_end = if self.is_system { config.config_markers.marker_system_end } else { config.config_markers.marker_home_end };
         let content = fs::read_to_string(&config_path)?; 
