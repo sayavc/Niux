@@ -17,7 +17,7 @@ impl HookConfig {
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), config)?;
         writer_write(tmp.path().to_str().unwrap(), cfg.hooks_config_path.to_str().unwrap());
-        println!("Create config in {}", cfg.hooks_config_path.to_str().unwrap().green());
+        println!("Config created in {}", cfg.hooks_config_path.to_str().unwrap().green());
         Ok(())
     }
     pub fn get() -> HookConfig {

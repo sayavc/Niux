@@ -9,6 +9,11 @@ config-markers {{
     marker-home-end "];"
     marker-system-end "];"
 }}
-config-security {{
+security {{
     su-type "{}"
+}}
+commands {{
+    rebuild-home "{}"
+    rebuild-system "{}"
+    update-flakes "{}"
 }}

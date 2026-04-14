@@ -8,7 +8,9 @@ pub struct NiuxConfig {
     #[knuffel(child)]
     pub config_markers: ConfigMarkers,
     #[knuffel(child)]
-    pub config_security: ConfigSecurity
+    pub security: Security,
+    #[knuffel(child)]
+    pub commands: Commands,
 }
 
 #[derive(knuffel::Decode)]
@@ -33,9 +35,18 @@ pub struct ConfigMarkers {
     pub marker_system_end: String,
 }
 #[derive(knuffel::Decode)]
-pub struct ConfigSecurity {
+pub struct Security {
     #[knuffel(child, unwrap(argument))]
     pub su_type: String,
+}
+#[derive(knuffel::Decode)]
+pub struct Commands {
+    #[knuffel(child, unwrap(argument))]
+    pub rebuild_home: String,
+    #[knuffel(child, unwrap(argument))]
+    pub rebuild_system: String,
+    #[knuffel(child, unwrap(argument))]
+    pub update_flakes: String,
 }
 // auto generated config
 #[derive(knuffel::Decode)]

@@ -17,3 +17,9 @@ pub enum HookEvent {
     PreClear,
     PostClear,
 }
+#[allow(dead_code)]
+pub struct Commands {
+    rebuild_system: String,
+    rebuild_home: String,
+    update_flakes: String,
+}

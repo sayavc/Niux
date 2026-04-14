@@ -1,6 +1,6 @@
 [package]
 name = "niux"
-version = "1.0.3"
+version = "1.2.3"
 edition = "2024"
 
 [dependencies]
@@ -10,6 +10,7 @@ dirs = "6.0.0"
 tempfile = "3.27.0"
 libc = "*"
 colored = "3.1.1"
+shell-words = "1.1.0"
 
 [[bin]]
 name = "niux"
