@@ -18,7 +18,7 @@ impl NiuxConfig {
         Ok(())
     }
     pub fn update_flake(package: &str) -> Result<(), Box<dyn std::error::Error>>  {
-        if check_flakes() {
+        if !check_flakes() {
             return Err("Flakes are not enabled".into());
         }
         run_bash_interactive(&["sudo", "nix", "flake", "update", package, "--flake", &NiuxConfig::get().config_paths.path_nix_flake])?;

@@ -2,11 +2,16 @@ mod config;
 mod utils;
 mod ops;
 mod structures;
-use clap::Parser;
+use clap::{ Parser, CommandFactory };
 use structures::{ Args, Package};
 use utils::args_handler::*;
 fn main() {
     let args = Args::parse();
+    if let Some(shell) = args.completions {
+        let mut cmd = Args::command();
+        clap_complete::generate(shell, &mut cmd, "niux", &mut std::io::stdout());
+        return;
+    }
     let target = args.target();
     let action = args.action();
     match handle(&target, &args) { 

@@ -47,7 +47,7 @@ pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::
     }
     if args.get_current_path {
         match AutoGenNiuxConfig::get() {
-            Some(cfg) => println!("{}\n{}", cfg.config_path.to_string_lossy().blue(), cfg.hooks_config_path.to_string_lossy()),
+            Some(cfg) => println!("{}\n{}", cfg.config_path.to_string_lossy().blue(), cfg.hooks_config_path.to_string_lossy().blue()),
             None => println!("none"),
         }
         return Ok(true);

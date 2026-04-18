@@ -19,10 +19,19 @@
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
 
+          nativeBuildInputs = [ pkgs.installShellFiles ];
+
+          postInstall = ''
+           installShellCompletion --cmd niux \
+           --bash <($out/bin/niux --completions bash) \
+           --zsh <($out/bin/niux --completions zsh) \
+           --fish <($out/bin/niux --completions fish)
+          '';
+
           meta = {
             description = "Declarative NixOS package manager";
             homepage = "https://github.com/sayavc/niux";
-            license = pkgs.lib.licenses.mit;
+            license = pkgs.lib.licenses.gpl3Only;
             mainProgram = "niux";
           };
         };

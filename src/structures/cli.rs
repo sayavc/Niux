@@ -1,4 +1,5 @@
 use clap::{ Parser, ArgGroup };
+use clap_complete::Shell;
 #[derive(Parser)]
 #[command(
     name = "niux",
@@ -12,6 +13,9 @@ use clap::{ Parser, ArgGroup };
         .multiple(true)
 ))]
 pub struct Args {
+    #[arg(long, value_enum, exclusive = true,
+        help = "Generate shell completions")]
+    pub completions: Option<Shell>,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "default_path_config", "list", "clear"],
         help = "Generate a default configuration file")]
     pub gen_config: bool,
