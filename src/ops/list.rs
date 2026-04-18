@@ -1,5 +1,6 @@
 use crate::structures::{ Package, NiuxConfig };
 use std::fs;
+use colored::Colorize;
 impl Package {
     pub fn list_all() -> Result<(), Box<dyn std::error::Error>> {
         let config = NiuxConfig::get();
@@ -32,12 +33,13 @@ pub fn list_do_package(&self) -> Result<(), Box<dyn std::error::Error>> {
     let lines_cut_home = Self::search(&content_home.lines().map(String::from).collect(), false);
     let lines_cut_system = Self::search(&content_system.lines().map(String::from).collect(), true);
     for name in &self.name {
-        let found_home = lines_cut_home.iter().any(|l| l.contains(name.as_str()));
-        let found_system = lines_cut_system.iter().any(|l| l.contains(name.as_str()));
+        let found_home = lines_cut_home.iter().any(|l| l.trim() == name.as_str());
+        let found_system = lines_cut_system.iter().any(|l| l.trim() == name.as_str());
         match (found_home, found_system) {
-            (true, _) => println!("{name}: home"),
-            (_, true) => println!("{name}: system"),
-            _ => println!("{name}: not found"),
+            (true, false) => println!("{}: home", name.blue()),
+            (false, true) => println!("{}: system", name.blue()),
+            (true, true) => println!("{}: home & system", name.blue()),
+            (false, false) => println!("{}: not found", name.blue()),
         }
     } 
     Ok(())

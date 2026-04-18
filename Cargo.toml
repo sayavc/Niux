@@ -1,6 +1,6 @@
 [package]
 name = "niux"
-version = "1.2.3"
+version = "26.4.1"
 edition = "2024"
 
 [dependencies]

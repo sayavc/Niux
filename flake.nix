@@ -22,7 +22,7 @@
           meta = {
             description = "Declarative NixOS package manager";
             homepage = "https://github.com/sayavc/niux";
-            license = pkgs.lib.licenses.mit;
+            license = pkgs.lib.licenses.gpl3Only;
             mainProgram = "niux";
           };
         };

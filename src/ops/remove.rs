@@ -42,7 +42,7 @@ impl Package {
             return Ok(())
         }
         write_changes_to_config(&new_content, &config_path);
-        println!("{}", "Package remove with config".green());
+        println!("{}", "Package removed with config".green());
         HookConfig::run(HookEvent::PostRemove)?;
         match (self.rebuild, self.is_system) {
         (true, false) => NiuxConfig::rebuild_home()?,

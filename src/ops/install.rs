@@ -30,7 +30,7 @@ impl Package {
             println!("{}", "Nothing has changed...".yellow());
             return Ok(());
         }
-        println!("{}", "Package add to config".green());
+        println!("{}", "Package added to config".green());
         HookConfig::run(HookEvent::PostInstall)?;
         match (self.rebuild, self.is_system) {
             (true, false) => NiuxConfig::rebuild_home()?,
