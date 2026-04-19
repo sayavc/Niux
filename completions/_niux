@@ -1,0 +1,26 @@
+#compdef niux
+
+_niux_packages() {
+  local packages
+  packages=(${(f)"$(niux -l)"})
+  compadd -a packages
+}
+
+_niux_search() {
+  local packages
+  packages=(${(f)"$(niux --search $words[3])"})
+  compadd -a packages
+}
+
+_niux() {
+  case $words[2] in
+    -l|-Hl|-Sl|-Hr|-Sr)
+      _niux_packages
+      ;;
+    -Hi|-Si)
+      _niux_search
+      ;;
+  esac
+}
+
+_niux

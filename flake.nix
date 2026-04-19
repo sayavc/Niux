@@ -16,6 +16,14 @@
           pname = manifest.name;
           version = manifest.version;
 
+          nativeBuildInputs = [ pkgs.installShellFiles ];
+
+          postInstall = ''
+           installShellCompletion --zsh --name _niux ${./completions/_niux}
+           installShellCompletion --bash ${./completions/niux.bash}
+           installShellCompletion --fish ${./completions/niux.fish}
+          '';
+
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
 

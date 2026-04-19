@@ -1,7 +1,7 @@
 use colored::Colorize;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig, Args, Package, HookEvent, hook_config::HookConfig };
 pub enum Target { System, Home, Both, None }
-pub enum Action { Install, Remove, None }
+pub enum Action { Install, Remove, Search, None }
 impl Args {
     pub fn target(&self) -> Target {
         match (self.system, self.home) {
@@ -12,9 +12,10 @@ impl Args {
         }
     }
     pub fn action(&self) -> Action {
-        match (self.install, self.remove) {
-            (true, false) => Action::Install,
-            (false, true) => Action::Remove,
+        match (self.install, self.remove, self.search) {
+            (true, false, false) => Action::Install,
+            (false, true, false) => Action::Remove,
+            (false, false, true) => Action::Search,
             _ => Action::None,
         }
     }
@@ -23,12 +24,13 @@ pub fn dispatch(action: &Action, package: &Package) -> Result<(), Box<dyn std::e
     match action {
         Action::Install => package.install()?,
         Action::Remove => package.remove()?,
+        Action::Search => package.search()?,
         Action::None => return Err("No action specified".into()),
     }
     Ok(())
 }
 pub fn handle(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error::Error>> {
-    if args.package.is_some() && !args.install && !args.remove && !args.update && !args.list { return Err("Invalid arguments".into()) }
+    if args.package.is_some() && !args.install && !args.remove && !args.update && !args.list && !args.search { return Err("Invalid arguments".into()) }
     if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone(), args.default_hook_path_config.clone())?; NiuxConfig::create()?; HookConfig::create()?; return Ok(true); }
     if args.package.is_some() && args.update { 
         HookConfig::run(HookEvent::PreUpdate)?;
