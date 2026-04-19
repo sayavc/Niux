@@ -50,6 +50,8 @@ impl HookConfig {
             HookEvent::PostList => "post-list",
             HookEvent::PreClear => "pre-clear",
             HookEvent::PostClear => "post-clear",
+            HookEvent::PreSearch => "pre-search",
+            HookEvent::PostSearch => "post-search",
         }; 
         for hook in &config.actions {
             if hook.action == action {

@@ -1,4 +1,4 @@
-// available actions: install remove rebuild update list clear
+// available actions: install remove rebuild update list clear search
 // use pre and post prefix
 // example:
 /*

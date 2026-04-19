@@ -16,6 +16,8 @@ pub enum HookEvent {
     PostList,
     PreClear,
     PostClear,
+    PreSearch,
+    PostSearch,
 }
 #[allow(dead_code)]
 pub struct Commands {

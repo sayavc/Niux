@@ -24,22 +24,25 @@ pub struct Args {
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
         help = "Displays current path")]
     pub get_current_path: bool,
+    #[arg(long, conflicts_with_all = ["remove", "update", "install"],
+        help = "search packages with nix-search")]
+    pub search: bool,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
         help = "This is nix-collect-garbage")]
     pub clear: bool,
-    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config", "default_hook_path_config", "update", "list", "clear", "get_current_path"],
+    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config", "default_hook_path_config", "update", "list", "clear", "search", "get_current_path"],
         help = "Manage home packages")]
     pub home: bool,
-    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "default_path_config", "default_hook_path_config", "update", "list", "clear", "get_current_path"],
+    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "default_path_config", "default_hook_path_config", "update", "list", "clear", "search", "get_current_path"],
         help = "Manage system packages")]
     pub system: bool,
-    #[arg(short = 'i', conflicts_with_all = ["remove", "update"], 
+    #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search"], 
         help = "Install packages")]
     pub install: bool,
-    #[arg(short = 'r', conflicts_with_all = ["install", "update"],
+    #[arg(short = 'r', conflicts_with_all = ["install", "update", "search"],
         help = "Remove packages")]
     pub remove: bool,
-    #[arg(short = 'U', conflicts_with_all = ["install", "remove"], 
+    #[arg(short = 'U', conflicts_with_all = ["install", "remove", "search"], 
         help = "Update flakes")]
     pub update: bool,
     #[arg(short = 'a', requires = "target_group", 
