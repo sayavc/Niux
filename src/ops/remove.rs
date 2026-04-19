@@ -1,4 +1,5 @@
 use crate::structures::{ Package, NiuxConfig, HookEvent, hook_config::HookConfig };
+use crate::error;
 use crate::utils::{ write_changes_to_config };
 use colored::Colorize;
 use std::fs;
@@ -8,7 +9,7 @@ impl Package {
         let config = NiuxConfig::get();
         let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
         if !std::path::Path::new(&config_path).exists() {
-            println!("{}", "Config path is wrong".yellow());
+            error!("{}", "Config path is wrong");
             return Ok(())
         }
         let config_marker = if self.is_system { config.config_markers.marker_system } else { config.config_markers.marker_home };

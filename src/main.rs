@@ -12,12 +12,12 @@ fn main() {
     match handle(&target, &args) { 
         Ok(true) => return,
         Ok(false) => {},
-        Err(e) => { eprintln!("error: {e}"); std::process::exit(1); }
+        Err(e) => { error!("{e}"); std::process::exit(1); }
     }
     match rebuild(&target, &args) {
         Ok(true) => return,
         Ok(false) => {},
-        Err(e) => { eprintln!("error: {e}"); std::process::exit(1); }
+        Err(e) => { error!("{e}"); std::process::exit(1); }
     }
     let package = Package {
         name: args.package.clone().unwrap_or_default(),
@@ -27,10 +27,10 @@ fn main() {
     match list(&args, &package) {
         Ok(true) => return,
         Ok(false) => {},
-        Err(e) => { eprintln!("error: {e}"); std::process::exit(1); }
+        Err(e) => { error!("{e}"); std::process::exit(1); }
     }
     match dispatch(&action, &package) {
         Ok(()) => (),
-        Err(e) => { eprintln!("error: {e}"); std::process::exit(1); }
+        Err(e) => { error!("{e}"); std::process::exit(1); }
     }
 }

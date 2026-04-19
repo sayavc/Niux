@@ -1,4 +1,5 @@
 use std::process;
+use crate::error;
 use crate::structures::{ NiuxConfig, Commands };
 use crate::utils::common::{ check_flakes, check_home_manager, run_bash };
 impl NiuxConfig {
@@ -22,7 +23,7 @@ impl NiuxConfig {
         args.join(" ")
     }
     fn rebuild_home_command(flakes: bool, home_manager: bool) -> String {
-        let user = std::env::var("USER").unwrap_or_else(|e| { eprintln!("Failes: {e}"); process::exit(1); });
+        let user = std::env::var("USER").unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
         if !home_manager {
         return Self::rebuild_system_command(flakes);
         }

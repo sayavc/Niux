@@ -1,5 +1,6 @@
 use clap::{ Parser, Subcommand };
 use std::os::unix::fs::MetadataExt;
+use colored::Colorize;
 use std::process;
 use std::fs;
 #[derive(Parser)]
@@ -18,13 +19,13 @@ let args = Cli::parse();
 match args.command {
     Commands::Init { config_path, hook_config_path } => {
         if let Err(e) = create_autogen(&config_path, &hook_config_path) {
-            eprintln!("Failed: {e}");
+            eprintln!("{}: {}", "Failed".red(), e.to_string().red());
             process::exit(1);
         }
     }
     Commands::Write { tmp_path, dest_path } => {
         if let Err(e) = writer(&tmp_path, &dest_path) {
-            eprintln!("Failed: {e}");
+            eprintln!("{}: {}", "Failed".red(), e.to_string().red());
             process::exit(1);
         }
     }
