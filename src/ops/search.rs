@@ -6,10 +6,13 @@ impl Package {
         if !command_exists("nix-search") {
             return Err("nix-search is not installed".into());
         } 
+        if self.name.is_empty() {
+            return Ok(())
+        }
         println!("{}", run_bash(&["nix-search", &self.name[0]]).lines()
             .filter_map(|line| line.split_whitespace().next())
             .collect::<Vec<_>>().join("\n"));
-            HookConfig::run(HookEvent::PostSearch)?;
+        HookConfig::run(HookEvent::PostSearch)?;
         Ok(())
     }
 }
