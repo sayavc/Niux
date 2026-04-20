@@ -187,7 +187,7 @@ actions {
 | `-U, --update` | Update flakes |
 | `--gen-config` | Generate default configuration |
 | `--default-path-config` | Use custom config path |
-| `--get-current-path` | get config paths |
+| `--get-current-path` | Get config paths |
 | `--clear` | Run garbage collection |
 | `--search`| Search packages from nixpkgs |
 
