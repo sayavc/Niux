@@ -1,5 +1,6 @@
 use colored::Colorize;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig, Args, Package, HookEvent, hook_config::HookConfig };
+use crate::utils::nvd_integration::nvd;
 pub enum Target { System, Home, Both, None }
 pub enum Action { Install, Remove, Search, None }
 impl Args {
@@ -91,6 +92,7 @@ pub fn rebuild(target: &Target, args: &Args) -> Result<bool, Box<dyn std::error:
             Target::None => return Err("No target specified".into()),
         }
         HookConfig::run(HookEvent::PostRebuild)?;
+        nvd()?;
         return Ok(true);
     }  
     Ok(false)

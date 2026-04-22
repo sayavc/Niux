@@ -8,6 +8,8 @@ pub struct NiuxConfig {
     #[knuffel(child)]
     pub config_markers: ConfigMarkers,
     #[knuffel(child)]
+    pub features: Features,
+    #[knuffel(child)]
     pub security: Security,
     #[knuffel(child)]
     pub commands: Commands,
@@ -33,6 +35,11 @@ pub struct ConfigMarkers {
     pub marker_home_end: String,
     #[knuffel(child, unwrap(argument))]
     pub marker_system_end: String,
+}
+#[derive(knuffel::Decode)]
+pub struct Features {
+    #[knuffel(child, unwrap(argument))]
+    pub nvd_integration: bool,
 }
 #[derive(knuffel::Decode)]
 pub struct Security {

@@ -9,6 +9,9 @@ config-markers {{
     marker-home-end "];"
     marker-system-end "];"
 }}
+features {{
+    nvd-integration false
+}}
 security {{
     su-type "{}"
 }}

@@ -1,5 +1,5 @@
 use crate::structures::{ Package, NiuxConfig, HookEvent, hook_config::HookConfig };
-use crate::utils::{ write_changes_to_config };
+use crate::utils::{ write_changes_to_config, nvd_integration::nvd };
 use colored::Colorize;
 use std::fs;
 impl Package {
@@ -49,6 +49,7 @@ impl Package {
         (true, true) => NiuxConfig::rebuild_system()?,
         _ => return Ok(()),
     }
+        nvd()?;
         Ok(())
     }
 }
