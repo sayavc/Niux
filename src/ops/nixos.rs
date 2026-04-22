@@ -1,6 +1,6 @@
 use shell_words;
 use crate::structures::NiuxConfig;
-use crate::utils::{ run_bash_interactive, check_flakes};
+use crate::utils::{ run_bash_interactive };
 impl NiuxConfig {
     pub fn rebuild_home() -> Result<(), Box<dyn std::error::Error>>  {
         let args = shell_words::split(&Self::get().commands.rebuild_home)?;
@@ -18,9 +18,6 @@ impl NiuxConfig {
         Ok(())
     }
     pub fn update_flake(package: &str) -> Result<(), Box<dyn std::error::Error>>  {
-        if !check_flakes() {
-            return Err("Flakes are not enabled".into());
-        }
         run_bash_interactive(&["sudo", "nix", "flake", "update", package, "--flake", &NiuxConfig::get().config_paths.path_nix_flake])?;
         Ok(())
     }

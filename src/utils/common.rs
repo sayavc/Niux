@@ -1,7 +1,7 @@
 use std::process;
 use crate::error;
 use tempfile::NamedTempFile;
-use crate::structures::{ NiuxConfig, AutoGenNiuxConfig };
+use crate::structures::{ NiuxConfig };
 use crate::utils::get_privilege_type;
 pub fn run_bash_interactive(args: &[&str]) -> Result<(), Box<dyn std::error::Error>> {
     let first = if args[0] == "sudo" { NiuxConfig::get().security.su_type }
@@ -64,14 +64,3 @@ pub fn user_input() -> String {
         .unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
     user_input
 }
-pub fn check_flakes() -> bool {
-    let test = AutoGenNiuxConfig::get().ok_or("Failed to get config path").unwrap_or_else(|e| {
-        error!("Failed: {e}"); process::exit(1); 
-    });
-    let cfg = if test.config_path.exists() { NiuxConfig::get().config_paths.path_nix_flake } else { "/etc/nixos/".to_string() };
-    std::path::Path::new(&cfg).join("flake.nix").exists()
-}
-pub fn check_home_manager() -> bool {
-        command_exists("home-manager")
-}
-
