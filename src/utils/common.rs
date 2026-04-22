@@ -1,4 +1,5 @@
 use std::process;
+use crate::error;
 use tempfile::NamedTempFile;
 use crate::structures::{ NiuxConfig, AutoGenNiuxConfig };
 use crate::utils::get_privilege_type;
@@ -23,9 +24,9 @@ fn bash(args: &[&str], type_bash: bool) -> String {
         .args(&args[1..])
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .output()
-        .unwrap_or_else(|e| { eprintln!("Failed: {e}"); process::exit(1); });
+        .unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
     if !result.status.success() {
-        eprintln!("{}", String::from_utf8_lossy(&result.stderr));
+        error!("{}", String::from_utf8_lossy(&result.stderr));
         process::exit(1);
     }
     String::from_utf8(result.stdout).unwrap().trim().to_string()
@@ -60,12 +61,12 @@ pub fn user_input() -> String {
     let mut user_input = String::new();
     std::io::stdin()
         .read_line(&mut user_input)
-        .unwrap_or_else(|e| { eprintln!("Failed: {e}"); process::exit(1); });
+        .unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
     user_input
 }
 pub fn check_flakes() -> bool {
     let test = AutoGenNiuxConfig::get().ok_or("Failed to get config path").unwrap_or_else(|e| {
-        eprintln!("Failed: {e}"); process::exit(1); 
+        error!("Failed: {e}"); process::exit(1); 
     });
     let cfg = if test.config_path.exists() { NiuxConfig::get().config_paths.path_nix_flake } else { "/etc/nixos/".to_string() };
     std::path::Path::new(&cfg).join("flake.nix").exists()

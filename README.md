@@ -31,7 +31,8 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 - Simple and intuitive command syntax
 - Supports both standalone and module home-manager
 - Supports NixOS with and without flakes
-- Hooks which allow to automate actions 
+- Hooks which allow to automate actions
+- Autocompletion like Pacman and apt  
 
 ## Requirements
 - NixOS
@@ -136,6 +137,7 @@ niux -l firefox             # Search everywhere
 niux -Hl firefox            # Search in home
 niux -Sl firefox            # Search in system
 niux -l firefox vim         # Search multiple
+niux --search firefox       # Search from nixpkgs 
 ```
 
 ### Updates
@@ -163,13 +165,14 @@ niux --clear                # Run nix-collect-garbage
 
 ### Hooks 
 Check in /etc/niux_hooks.kdl 
-example:
+Example:
 ```kdl
 actions {
     action "post-rebuild"
     run "zsh /etc/niux_post_rebuild.zsh"
 }
 ```
+> available actions: install, remove, rebuild, update, list, clear, search 
 
 ## Commands Reference
 
@@ -184,7 +187,9 @@ actions {
 | `-U, --update` | Update flakes |
 | `--gen-config` | Generate default configuration |
 | `--default-path-config` | Use custom config path |
+| `--get-current-path` | Get config paths |
 | `--clear` | Run garbage collection |
+| `--search`| Search packages from nixpkgs |
 
 ## Contributing
 

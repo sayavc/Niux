@@ -18,6 +18,5 @@ pub fn get_privilege_type() -> String {
             return su.to_string();
         }
     }
-    eprintln!("unknown privilege type");
-    std::process::exit(1);
+    " ".to_string()
 }

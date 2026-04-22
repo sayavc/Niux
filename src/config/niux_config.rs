@@ -1,4 +1,5 @@
 use std::fs;
+use crate::error;
 use colored::Colorize;
 use crate::structures::AutoGenNiuxConfig;
 use std::process;
@@ -10,7 +11,7 @@ impl NiuxConfig {
     pub fn create() -> Result<(), Box<dyn std::error::Error>>  {
         let cfg = AutoGenNiuxConfig::get().ok_or("Failed to get config path")?; 
         if cfg.config_path.exists() { 
-            println!("Niux config is exists, rewrite? y/n");
+            println!("{}", "Niux config is exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
         }  
         let commands = NiuxConfig::autodetect();
@@ -23,15 +24,15 @@ impl NiuxConfig {
     }
     pub fn get() -> NiuxConfig {
         let cfg = AutoGenNiuxConfig::get().unwrap_or_else(|| {
-            println!("Failed to get config path");
+            error!("{}", "Failed to get config path");
             process::exit(1);
         });
         let content = fs::read_to_string(cfg.config_path).unwrap_or_else(|e| {
-            println!("Failed: {e}");
+            error!("{e}");
             process::exit(1);
         });
         knuffel::parse::<NiuxConfig>("config.kdl", &content).unwrap_or_else(|e| {
-            println!("Failed: {e}");
+            error!("{e}");
             process::exit(1);
         })
     }

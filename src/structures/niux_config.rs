@@ -8,7 +8,7 @@ pub struct NiuxConfig {
     #[knuffel(child)]
     pub config_markers: ConfigMarkers,
     #[knuffel(child)]
-    pub features: Features,
+    pub features: Option<Features>,
     #[knuffel(child)]
     pub security: Security,
     #[knuffel(child)]
@@ -36,7 +36,7 @@ pub struct ConfigMarkers {
     #[knuffel(child, unwrap(argument))]
     pub marker_system_end: String,
 }
-#[derive(knuffel::Decode)]
+#[derive(knuffel::Decode, Default)]
 pub struct Features {
     #[knuffel(child, unwrap(argument))]
     pub nvd_integration: bool,

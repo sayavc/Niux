@@ -1,5 +1,6 @@
 use std::process;
 use std::fs;
+use crate::error;
 use colored::Colorize;
 use crate::structures::{ hook_config::HookConfig, models::HookEvent, AutoGenNiuxConfig };
 use crate::utils::{writer_write, run_bash_interactive, user_input };
@@ -7,10 +8,10 @@ impl HookConfig {
     pub fn create() -> Result<(), Box<dyn std::error::Error>> {
         let cfg = AutoGenNiuxConfig::get().ok_or("Failed to get config path")?;
         if std::path::Path::new(&cfg.hooks_config_path).exists() {
-            println!("Hooks config is exists, rewrite? y/n");
+            println!("{}", "Hooks config os exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
         } else {
-            println!("Create hook config?");
+            println!("{}", "Create hook config? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
         }
         let config = include_str!("../assets/hook_config.kdl");
@@ -23,11 +24,11 @@ impl HookConfig {
     pub fn get() -> HookConfig {
         let cfg = "/etc/niux_hooks.kdl";
         let content = fs::read_to_string(cfg).unwrap_or_else(|e| {
-            println!("Failed {e}");
+            error!("{e}");
             process::exit(1);
         });
         knuffel::parse::<HookConfig>("niux_hooks.kdl", &content).unwrap_or_else(|e| {
-            println!("Failed: {e}");
+            error!("{e}");
             process::exit(1); 
         })
     }

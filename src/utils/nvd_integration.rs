@@ -2,7 +2,7 @@ use std::fs;
 use crate::structures::NiuxConfig;
 use crate::utils::{run_bash, command_exists};
 pub fn nvd() -> Result<(), Box<dyn std::error::Error>>  {
-    if !NiuxConfig::get().features.nvd_integration { return Ok(()); }
+    if !NiuxConfig::get().features.unwrap_or_default().nvd_integration { return Ok(()); }
     if !command_exists("nvd") { return Err("Nvd is not installed".into()); }
     let state_dir = match dirs::state_dir() {
         Some(num) => num,
