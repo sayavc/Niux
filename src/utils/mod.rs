@@ -1,4 +1,5 @@
 pub mod common;
+pub mod nvd_integration;
 pub mod autodetect;
 pub mod macros;
 pub mod args_handler;
