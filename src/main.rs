@@ -9,21 +9,21 @@ fn main() {
     let args = Args::parse();
     let target = args.target();
     let action = args.action();
-    match handle(&target, &args) { 
-        Ok(true) => return,
-        Ok(false) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
-    match rebuild(&target, &args) {
-        Ok(true) => return,
-        Ok(false) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
     let package = Package {
         name: args.package.clone().unwrap_or_default(),
         is_system: matches!(target, Target::System),
         rebuild: args.apply,
     };
+    match handle(&target, &args, &package) { 
+        Ok(true) => return,
+        Ok(false) => {},
+        Err(e) => { error!("{e}"); std::process::exit(1); }
+    }
+    match rebuild(&target, &args, &package) {
+        Ok(true) => return,
+        Ok(false) => {},
+        Err(e) => { error!("{e}"); std::process::exit(1); }
+    }
     match list(&args, &package) {
         Ok(true) => return,
         Ok(false) => {},

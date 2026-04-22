@@ -1,5 +1,5 @@
 use crate::structures::{ Package, NiuxConfig, HookEvent, hook_config::HookConfig };
-use crate::utils::{ write_changes_to_config, nvd_integration::nvd };
+use crate::utils::{ write_changes_to_config };
 use crate::error;
 use colored::Colorize;
 use std::fs;
@@ -46,11 +46,10 @@ impl Package {
         println!("{}", "Package removed with config".green());
         HookConfig::run(HookEvent::PostRemove)?;
         match (self.rebuild, self.is_system) {
-        (true, false) => NiuxConfig::rebuild_home()?,
-        (true, true) => NiuxConfig::rebuild_system()?,
+        (true, false) => NiuxConfig::rebuild_home(self)?,
+        (true, true) => NiuxConfig::rebuild_system(self)?,
         _ => return Ok(()),
     }
-        nvd()?;
         Ok(())
     }
 }
