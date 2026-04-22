@@ -1,8 +1,7 @@
 use std::fs;
 use colored::Colorize;
 use crate::error;
-use crate::utils::{ write_changes_to_config, nvd_integration::nvd };
-use crate::error;
+use crate::utils::{ write_changes_to_config };
 use crate::structures::{ Package, HookEvent, hook_config::HookConfig, NiuxConfig };
 impl Package {
     pub fn install(&self) -> Result<(), Box<dyn std::error::Error>>  {
@@ -35,11 +34,10 @@ impl Package {
         println!("{}", "Package added to config".green());
         HookConfig::run(HookEvent::PostInstall)?;
         match (self.rebuild, self.is_system) {
-            (true, false) => NiuxConfig::rebuild_home()?,
-            (true, true) => NiuxConfig::rebuild_system()?,
+            (true, false) => NiuxConfig::rebuild_home(self)?,
+            (true, true) => NiuxConfig::rebuild_system(self)?,
             _ => return Ok(()),
         }
-        nvd()?;
         Ok(())
     }
 }
