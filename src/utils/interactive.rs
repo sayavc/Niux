@@ -1,11 +1,26 @@
 use std::process;
+use colored::Colorize;
 use crate::error;
 use crate::structures::{ NiuxConfig, Commands };
-use crate::utils::common::{ check_flakes, check_home_manager, run_bash };
+use crate::utils::common::{ run_bash, user_input };
 impl NiuxConfig {
     pub fn autodetect() -> Commands {
-        let flakes = check_flakes();
-        let home_manager = check_home_manager();
+        println!("{}", "Do you have flakes? y/n".blue());
+        let flakes = loop {
+            match user_input().trim() {
+                "y" => break true,
+                "n" => break false,
+                _ => { println!("Inccorect answer"); continue; }
+            };
+        };
+        println!("{}", "Do you have standalone home-manager? y/n".blue());
+        let home_manager = loop {
+            match user_input().trim() {
+                "y" => break true,
+                "n" => break false,
+                _ => { println!("Inccorect answer"); continue; }
+            };
+        };
         Commands {
             rebuild_system: Self::rebuild_system_command(flakes),
             rebuild_home: Self::rebuild_home_command(flakes, home_manager),

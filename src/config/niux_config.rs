@@ -28,11 +28,11 @@ impl NiuxConfig {
             process::exit(1);
         });
         let content = fs::read_to_string(cfg.config_path).unwrap_or_else(|e| {
-            error!("{e}");
+            error!("{e:?}");
             process::exit(1);
         });
         knuffel::parse::<NiuxConfig>("config.kdl", &content).unwrap_or_else(|e| {
-            error!("{e}");
+            error!("{e:?}");
             process::exit(1);
         })
     }
