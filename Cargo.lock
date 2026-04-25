@@ -394,6 +394,7 @@ dependencies = [
 name = "niux"
 version = "26.4.1"
 dependencies = [
+ "anyhow",
  "clap",
  "colored",
  "dirs",
