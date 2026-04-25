@@ -1,17 +1,24 @@
 use std::fs;
 use crate::error;
+use anyhow::bail;
 use crate::structures::{ NiuxConfig, models::Package };
 use crate::utils::{run_bash_interactive, command_exists};
 impl Package {
-    pub fn nvd(&self) -> Result<(), Box<dyn std::error::Error>>  {
-        if !NiuxConfig::get().features.unwrap_or_default().nvd_integration { return Ok(()); }
-        if !command_exists("nvd") { return Err("Nvd is not installed".into()); }
+    pub fn nvd(&self) -> anyhow::Result<()>  {
+        if !NiuxConfig::get()?.features.unwrap_or_default().nvd_integration { return Ok(()); }
+        if !command_exists("nvd") { bail!("Nvd is not installed"); }
         let state_dir = match dirs::state_dir() {
             Some(num) => num,
-            None => return Err(format!("{}.local/state is not exists", dirs::home_dir().ok_or("home dir is not exists")?.display()).into()),
+            None => {
+                let home = dirs::home_dir().unwrap_or_default();
+                error!("{}.local/state does not exist", home.display());
+                home
+            }
         };
-        if !state_dir.join("niux").exists() { fs::create_dir_all(state_dir.join("niux"))?; }
-        if !state_dir.join("niux/nvd_integration.txt").exists() { fs::File::create(state_dir.join("niux/nvd_integration.txt"))?; }
+        let nvd_dir = state_dir.join("niux");
+        if !&nvd_dir.exists() { fs::create_dir_all(&nvd_dir).inspect_err(|e| error!("Failed to create integration file: {e}")).ok(); }
+        if !&nvd_dir.join("nvd_integration.txt").exists() { fs::File::create(nvd_dir.join("nvd_integration.txt")).inspect_err(|e| error!("Failed to create integration file: {e}")).ok(); }
+
         let (profiles_path, prefix) = if self.is_system {
             (std::path::PathBuf::from("/nix/var/nix/profiles"), "system-")
         } else {
@@ -49,9 +56,9 @@ impl Package {
         }
         run_bash_interactive(&["nvd", "diff", &format!("{}/{prefix}{old}-link", profiles_path.display()), &format!("{}/{prefix}{new}-link", profiles_path.display())])?;
         let content = format!("{}\n{}",
-            if self.is_system { new.to_string() } else { lines.get(0).unwrap_or(&"").to_string() },
+            if self.is_system { new.to_string() } else { lines.first().unwrap_or(&"").to_string() },
             if self.is_system { lines.get(1).unwrap_or(&"").to_string() } else { new.to_string() });
-        fs::write(state_dir.join("niux/nvd_integration.txt"), content)?;
+        fs::write(nvd_dir.join("nvd_integration.txt"), content).inspect_err(|e| error!("Failed to write nvd_interation txt file for no re-output of diff: {e}")).ok();
         Ok(())
     }
 }

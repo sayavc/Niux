@@ -5,10 +5,10 @@ use colored::Colorize;
 use crate::structures::{ hook_config::HookConfig, models::HookEvent, AutoGenNiuxConfig };
 use crate::utils::{writer_write, run_bash_interactive, user_input };
 impl HookConfig {
-    pub fn create() -> Result<(), Box<dyn std::error::Error>> {
-        let cfg = AutoGenNiuxConfig::get().ok_or("Failed to get config path")?;
+    pub fn create() -> anyhow::Result<()> {
+        let cfg = AutoGenNiuxConfig::get()?;
         if std::path::Path::new(&cfg.hooks_config_path).exists() {
-            println!("{}", "Hooks config os exists, rewrite? y/n".blue());
+            println!("{}", "Hooks config is exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
         } else {
             println!("{}", "Create hook config? y/n".blue());
@@ -17,7 +17,7 @@ impl HookConfig {
         let config = include_str!("../assets/hook_config.kdl");
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), config)?;
-        writer_write(tmp.path().to_str().unwrap(), cfg.hooks_config_path.to_str().unwrap());
+        writer_write(tmp.path().to_str().unwrap(), cfg.hooks_config_path.to_str().unwrap())?;
         println!("Config created in {}", cfg.hooks_config_path.to_str().unwrap().green());
         Ok(())
     }
@@ -32,8 +32,8 @@ impl HookConfig {
             process::exit(1); 
         })
     }
-    pub fn run(event: HookEvent) -> Result<(), Box<dyn std::error::Error>> {
-        let cfg = AutoGenNiuxConfig::get().ok_or("Fauled to get config path")?;
+    pub fn run(event: HookEvent) -> anyhow::Result<()> {
+        let cfg = AutoGenNiuxConfig::get()?;
         if !std::path::Path::new(&cfg.hooks_config_path).exists() {
             return Ok(());
         }

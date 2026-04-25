@@ -1,4 +1,5 @@
 use colored::Colorize;
+use anyhow::bail;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig, Args, Package, HookEvent, hook_config::HookConfig };
 pub enum Target { System, Home, Both, None }
 pub enum Action { Install, Remove, Search, None }
@@ -20,35 +21,37 @@ impl Args {
         }
     }
 }
-pub fn dispatch(action: &Action, package: &Package) -> Result<(), Box<dyn std::error::Error>>  {
+pub fn dispatch(action: &Action, package: &Package) -> anyhow::Result<()>  {
     match action {
         Action::Install => package.install()?,
         Action::Remove => package.remove()?,
         Action::Search => package.search()?,
-        Action::None => return Err("No action specified".into()),
+        Action::None => bail!("No action specified"),
     }
     Ok(())
 }
-pub fn handle(target: &Target, args: &Args, package: &Package) -> Result<bool, Box<dyn std::error::Error>> {
-    if args.package.is_some() && !args.install && !args.remove && !args.update && !args.list && !args.search { return Err("Invalid arguments".into()) }
+pub fn handle(target: &Target, args: &Args, package: &Package) -> anyhow::Result<bool>  {
+    if args.package.is_some() && !args.install && !args.remove && !args.update && !args.list && !args.search { bail!("Invalid arguments") }
     if args.gen_config { AutoGenNiuxConfig::create(args.default_path_config.clone(), args.default_hook_path_config.clone())?; NiuxConfig::create()?; HookConfig::create()?; return Ok(true); }
     if args.package.is_some() && args.update { 
         HookConfig::run(HookEvent::PreUpdate)?;
-        NiuxConfig::update_flake(&args.package.as_ref().unwrap()[0])?;
+        if let Some(packages) = &args.package {
+        NiuxConfig::update_flake(&packages[0])?;
+        }
         rebuild(target, args, package)?;
         HookConfig::run(HookEvent::PostUpdate)?;
         return Ok(true);
     }
     if let Some(path) = args.default_path_config.clone() {
-        AutoGenNiuxConfig::create(Some(path), AutoGenNiuxConfig::get().map(|c| c.hooks_config_path))?;
+        AutoGenNiuxConfig::create(Some(path), AutoGenNiuxConfig::get().ok().map(|c| c.hooks_config_path))?;
         return Ok(true);
     }
     if let Some(path) = args.default_hook_path_config.clone() {
-        AutoGenNiuxConfig::create(AutoGenNiuxConfig::get().map(|c| c.config_path), Some(path))?;
+        AutoGenNiuxConfig::create(AutoGenNiuxConfig::get().ok().map(|c| c.config_path), Some(path))?;
         return Ok(true);
     }
     if args.get_current_path {
-        match AutoGenNiuxConfig::get() {
+        match AutoGenNiuxConfig::get().ok() {
             Some(cfg) => println!("{}\n{}", cfg.config_path.to_string_lossy().blue(), cfg.hooks_config_path.to_string_lossy().blue()),
             None => println!("none"),
         }
@@ -74,28 +77,28 @@ pub fn handle(target: &Target, args: &Args, package: &Package) -> Result<bool, B
         return Ok(true);
     }
     if (args.install || args.remove) && args.package.is_none() {
-        return Err("No package specified".into());
+        bail!("No package specified");
     }
     if (args.install || args.remove) && matches!(target, Target::Both) {
-        return Err("Cannot install/remove to both targets simultaneously".into());
+        bail!("Cannot install/remove to both targets simultaneously");
     } 
     Ok(false)
 }
-pub fn rebuild(target: &Target, args: &Args, package: &Package) -> Result<bool, Box<dyn std::error::Error>> {
+pub fn rebuild(target: &Target, args: &Args, package: &Package) -> anyhow::Result<bool> {
     if matches!(args.action(), Action::None) && args.apply {
         HookConfig::run(HookEvent::PreRebuild)?;
         match target {
             Target::System => NiuxConfig::rebuild_system(package)?,
             Target::Home => NiuxConfig::rebuild_home(package)?,
             Target::Both => { NiuxConfig::rebuild_system(&Package { is_system: true, ..(*package).clone() })?; NiuxConfig::rebuild_home(&Package { is_system: false, ..(*package).clone() })?; } 
-            Target::None => return Err("No target specified".into()),
+            Target::None => bail!("No target specified"),
         }
         HookConfig::run(HookEvent::PostRebuild)?;
         return Ok(true);
     }  
     Ok(false)
 }
-pub fn list(args: &Args, package: &Package) -> Result<bool, Box<dyn std::error::Error>> {
+pub fn list(args: &Args, package: &Package) -> anyhow::Result<bool> {
     HookConfig::run(HookEvent::PreList)?;
     if args.list && args.package.is_none() {
         Package::list_type(package)?;

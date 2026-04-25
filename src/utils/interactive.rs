@@ -1,10 +1,9 @@
-use std::process;
+use anyhow::Context;
 use colored::Colorize;
-use crate::error;
 use crate::structures::{ NiuxConfig, Commands };
 use crate::utils::common::{ run_bash, user_input };
 impl NiuxConfig {
-    pub fn autodetect() -> Commands {
+    pub fn autodetect() -> anyhow::Result<Commands> {
         println!("{}", "Do you have flakes? y/n".blue());
         let flakes = loop {
             match user_input().trim() {
@@ -21,24 +20,24 @@ impl NiuxConfig {
                 _ => { println!("Inccorect answer"); continue; }
             };
         };
-        Commands {
-            rebuild_system: Self::rebuild_system_command(flakes),
-            rebuild_home: Self::rebuild_home_command(flakes, home_manager),
+        Ok(Commands {
+            rebuild_system: Self::rebuild_system_command(flakes)?,
+            rebuild_home: Self::rebuild_home_command(flakes, home_manager)?,
             update_flakes: Self::update_flakes_command(flakes),
-        }
+        })
     }
-    fn rebuild_system_command(flakes: bool) -> String {
-        let hostname = run_bash(&["hostname"]);
+    fn rebuild_system_command(flakes: bool) -> anyhow::Result<String> {
+        let hostname = run_bash(&["hostname"])?;
         let mut args = vec!["sudo", "nixos-rebuild", "switch"];
         let flake_arg = format!("/etc/nixos#{}", hostname);
         if flakes {
             args.push("--flake");
             args.push(&flake_arg);
         }
-        args.join(" ")
+        Ok(args.join(" "))
     }
-    fn rebuild_home_command(flakes: bool, home_manager: bool) -> String {
-        let user = std::env::var("USER").unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
+    fn rebuild_home_command(flakes: bool, home_manager: bool) -> anyhow::Result<String> {
+        let user = std::env::var("USER").with_context(|| "Failed to get var $USER".to_string())?;
         if !home_manager {
         return Self::rebuild_system_command(flakes);
         }
@@ -51,7 +50,7 @@ impl NiuxConfig {
             args.push("--flake");
             args.push(flake_arg);
         }
-        args.join(" ")
+        Ok(args.join(" "))
     }
     pub fn update_flakes_command(flakes: bool)-> String {
         if flakes {

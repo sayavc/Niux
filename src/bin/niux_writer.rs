@@ -1,5 +1,6 @@
 use clap::{ Parser, Subcommand };
 use std::os::unix::fs::MetadataExt;
+use anyhow::{ Context, bail };
 use colored::Colorize;
 use std::process;
 use std::fs;
@@ -31,27 +32,28 @@ match args.command {
     }
 }
 }
-fn create_autogen(config_path: &str, hook_config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn create_autogen(config_path: &str, hook_config_path: &str) -> anyhow::Result<()> {
     let config_dir = std::path::Path::new("/var/lib/niux/");
-    fs::create_dir_all(config_dir)?;
+    fs::create_dir_all(config_dir).with_context(|| format!("Failed to create dir: {}", config_dir.display()))?;
     let content = format!(include_str!("../assets/autogen_config.kdl"), config_path, hook_config_path);
-    fs::write(config_dir.join("niux_autogen.kdl"), content)?;
+    let path_to_write = config_dir.join("niux_autogen.kdl");
+    fs::write(&path_to_write, content).with_context(|| format!("Failed to write config dir: {}", path_to_write.display()))?;
     Ok(())
 }
-fn writer(tmp_path: &str, dest_path: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let tmp_metadata = std::fs::metadata(tmp_path)?;
+fn writer(tmp_path: &str, dest_path: &str) -> anyhow::Result<()> {
+    let tmp_metadata = std::fs::metadata(tmp_path).with_context(|| format!("failed to write dir metadata: {tmp_path}"))?;
     if tmp_metadata.uid() == 0 {
-        return Err("tmp_path must not be owned by root".into());
+        bail!("tmp_path must not be owned by root");
     }
     if std::path::Path::new(dest_path).exists() {
-        let metadata = std::fs::symlink_metadata(dest_path);
-        if metadata?.file_type().is_symlink() {
+        let metadata = std::fs::symlink_metadata(dest_path).with_context(|| format!("failed to read metadata: {dest_path}"))?;
+        if metadata.file_type().is_symlink() {
             let real_path = std::fs::read_link(dest_path)?;
             let real_metadata = std::fs::metadata(&real_path)?;
             let file_uid = real_metadata.uid();
             let current_uid = unsafe { libc::getuid() };
             if file_uid != current_uid {
-                return Err("Symlink points to file owned by another user".into());
+                bail!("Symlink points to file owned by another user");
             }
         }
     }

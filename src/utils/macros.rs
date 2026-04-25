@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! error {
-    ($($arg:tt)*) => {
+    ($($arg:tt)*) => {{
         use colored::Colorize;
         eprintln!("{}: {}", "Error".red(), format!($($arg)*).red());
-    };
+    }};
 }

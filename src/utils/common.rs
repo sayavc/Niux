@@ -3,8 +3,8 @@ use crate::error;
 use tempfile::NamedTempFile;
 use crate::structures::{ NiuxConfig };
 use crate::utils::get_privilege_type;
-pub fn run_bash_interactive(args: &[&str]) -> Result<(), Box<dyn std::error::Error>> {
-    let first = if args[0] == "sudo" { NiuxConfig::get().security.su_type }
+pub fn run_bash_interactive(args: &[&str]) -> anyhow::Result<()> {
+    let first = if args[0] == "sudo" { NiuxConfig::get()?.security.su_type }
     else { args[0].to_string()};
     process::Command::new(first)
         .args(&args[1..])
@@ -12,9 +12,9 @@ pub fn run_bash_interactive(args: &[&str]) -> Result<(), Box<dyn std::error::Err
         .status()?;
     Ok(())
 }
-fn bash(args: &[&str], type_bash: bool) -> String {
+fn bash(args: &[&str], type_bash: bool) -> anyhow::Result<String> {
     let first = if type_bash {
-        if args[0] == "sudo" { NiuxConfig::get().security.su_type }
+        if args[0] == "sudo" { NiuxConfig::get()?.security.su_type }
         else { args[0].to_string() }
     } else {
         if args[0] == "sudo" { get_privilege_type() }
@@ -29,20 +29,22 @@ fn bash(args: &[&str], type_bash: bool) -> String {
         error!("{}", String::from_utf8_lossy(&result.stderr));
         process::exit(1);
     }
-    String::from_utf8(result.stdout).unwrap().trim().to_string()
+    Ok(String::from_utf8(result.stdout).unwrap().trim().to_string())
 }
-pub fn run_bash(args: &[&str]) -> String {
+pub fn run_bash(args: &[&str]) -> anyhow::Result<String> {
     bash(args, true)
     }
 
-pub fn run_early_bash(args: &[&str]) -> String {
+pub fn run_early_bash(args: &[&str]) -> anyhow::Result<String> {
     bash(args, false)
 }
-pub fn writer_init(config_path: &str, hooks_path: &str) {
-    run_early_bash(&["sudo", "niux-writer", "init", config_path, hooks_path]);
+pub fn writer_init(config_path: &str, hooks_path: &str) -> anyhow::Result<()> {
+    run_early_bash(&["sudo", "niux-writer", "init", config_path, hooks_path])?;
+    Ok(())
 }
-pub fn writer_write(tmp_path: &str, dest_path: &str) {
-    run_early_bash(&["sudo", "niux-writer", "write", tmp_path, dest_path]);
+pub fn writer_write(tmp_path: &str, dest_path: &str) -> anyhow::Result<()> {
+    run_early_bash(&["sudo", "niux-writer", "write", tmp_path, dest_path])?;
+    Ok(())
 }
 pub fn command_exists(cmd: &str) -> bool {
     process::Command::new("which")
@@ -52,10 +54,11 @@ pub fn command_exists(cmd: &str) -> bool {
         .map(|o| o.status.success())
         .unwrap_or(false)
 }
-pub fn write_changes_to_config(content: &str, dest_path: &str) {
+pub fn write_changes_to_config(content: &str, dest_path: &str) -> anyhow::Result<()> {
     let tmp = NamedTempFile::new().unwrap();
     std::fs::write(tmp.path(), content).unwrap();
-    writer_write(tmp.path().to_str().unwrap(), dest_path);
+    writer_write(tmp.path().to_str().unwrap(), dest_path)?;
+    Ok(())
 }
 pub fn user_input() -> String {
     let mut user_input = String::new();

@@ -11,6 +11,7 @@ tempfile = "3.27.0"
 libc = "*"
 colored = "3.1.1"
 shell-words = "1.1.0"
+anyhow = "1.0.102"
 
 [[bin]]
 name = "niux"
