@@ -1,3 +1,4 @@
+use crate::utils::user_input;
 use std::process;
 fn privilege_type(nya: &str) -> String {
     let output = process::Command::new("which")
@@ -18,5 +19,6 @@ pub fn get_privilege_type() -> String {
             return su.to_string();
         }
     }
-    " ".to_string()
+    println!("Privilege escalation tool not found. Enter yours (e.g. sudo, doas)");
+    user_input().trim().to_string()
 }

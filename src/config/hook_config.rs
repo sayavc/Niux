@@ -1,7 +1,6 @@
-use std::process;
-use std::fs;
-use crate::error;
+use anyhow::Context;
 use colored::Colorize;
+use std::fs;
 use crate::structures::{ hook_config::HookConfig, models::HookEvent, AutoGenNiuxConfig };
 use crate::utils::{writer_write, run_bash_interactive, user_input };
 impl HookConfig {
@@ -21,23 +20,17 @@ impl HookConfig {
         println!("Config created in {}", cfg.hooks_config_path.to_str().unwrap().green());
         Ok(())
     }
-    pub fn get() -> HookConfig {
-        let cfg = "/etc/niux_hooks.kdl";
-        let content = fs::read_to_string(cfg).unwrap_or_else(|e| {
-            error!("{e}");
-            process::exit(1);
-        });
-        knuffel::parse::<HookConfig>("niux_hooks.kdl", &content).unwrap_or_else(|e| {
-            error!("{e}");
-            process::exit(1); 
-        })
+    pub fn get() -> anyhow::Result<HookConfig> {
+        let hook_config_path = AutoGenNiuxConfig::get()?.hooks_config_path;
+        let content = fs::read_to_string(&hook_config_path).with_context(|| format!("Failed to read config: {})", hook_config_path.display()))?;
+        knuffel::parse::<HookConfig>("niux_hooks.kdl", &content).with_context(|| format!("Failed to parse Hook config: {}", hook_config_path.display()))
     }
     pub fn run(event: HookEvent) -> anyhow::Result<()> {
         let cfg = AutoGenNiuxConfig::get()?;
         if !std::path::Path::new(&cfg.hooks_config_path).exists() {
             return Ok(());
-        }
-        let config = HookConfig::get();
+        } 
+        let config = HookConfig::get()?;
         let action = match event {
             HookEvent::PreInstall => "pre-install", 
             HookEvent::PostInstall => "post-install",

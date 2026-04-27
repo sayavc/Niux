@@ -1,5 +1,5 @@
 use colored::Colorize;
-use anyhow::Context;
+use anyhow::{ Context, bail };
 use crate::structures::{ Package, NiuxConfig, HookEvent, hook_config::HookConfig };
 use crate::error;
 use crate::utils::{ write_changes_to_config };
@@ -18,26 +18,25 @@ impl Package {
         let content = fs::read_to_string(&config_path).with_context(|| format!("Failed to read config: {config_path}"))?; 
 
         let mut lines: Vec<String> = content.lines().map(String::from).collect();
-        for i in 0..lines.len() {
-            if lines[i].contains(&config_marker) {
-                for c in 0..lines.len() {
-                    if lines[c].contains(&config_marker_end) {
-                        let mut indices_to_remove: Vec<usize> = Vec::new();
-                        for (j, line) in lines[i..=c].iter().enumerate() {
-                            if self.name.iter().any(|n| line.contains(n.as_str())) {
-                                indices_to_remove.push(i + j);
-                            }
-                        }
-                        indices_to_remove.sort_unstable_by(|a, b| b.cmp(a));
-                        for idx in indices_to_remove {
-                            lines.remove(idx);
-                        }
-                        break;
-                    }
-                }
-                break;
+            let Some(marker_start) = lines.iter().position(|l| l.contains(&config_marker)) else {
+                bail!("Marker is not found: {config_marker}");
+            };
+            let Some(marker_end) = lines.iter().position(|l| l.contains(&config_marker_end)) else {
+                bail!("Marker is not found: {config_marker_end}");
+            };
+            if marker_start > marker_end {
+                bail!("Marker end goes earlier marker home, please move your packages in separate config or use custom markers");
             }
-        }
+            let mut indices_to_remove: Vec<usize> = lines[marker_start..=marker_end]
+                .iter()
+                .enumerate()
+                .filter(|(_, line)| self.name.iter().any(|n| line.contains(n.as_str())))
+                .map(|(j, _)| marker_start + j)
+                .collect();
+            indices_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+            for idx in indices_to_remove {
+                lines.remove(idx);
+            }
         let new_content = lines.join("\n");
          if new_content == content {
              println!("{}", "Package not found in config".yellow());
