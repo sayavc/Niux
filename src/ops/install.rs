@@ -1,5 +1,5 @@
 use colored::Colorize;
-use anyhow::{ Context };
+use anyhow::{ Context, bail };
 use std::fs;
 use crate::error;
 use crate::utils::{ write_changes_to_config };
@@ -18,20 +18,22 @@ impl Package {
         let mut lines: Vec<String> = content.lines().map(String::from).collect();
         for i in 0..lines.len() {
             if lines[i].contains(&config_marker) {
-                let indent = lines[i + 1].len() - lines[i + 1].trim_start().len();
+                let Some(marker_pos) = lines.iter().position(|l| l.contains(&config_marker)) else {
+                    bail!("Marker is not found");
+                };
+                let indent = lines[marker_pos + 1].len() - lines[marker_pos + 1].trim_start().len();
                 for name in self.name.iter().rev() {
-                    let padded = format!("{}{}", " ".repeat(indent), name);
-                    lines.insert(i + 1, padded);
+                    lines.insert(marker_pos + 1, format!("{}{}", " ".repeat(indent), name));
                 }
                 break;
             }
         }
         let new_content = lines.join("\n");
-        write_changes_to_config(&new_content, &config_path)?;
         if new_content == content {
             println!("{}", "Nothing has changed...".yellow());
             return Ok(());
         }
+        write_changes_to_config(&new_content, &config_path)?;
         println!("{}", "Package added to config".green());
         HookConfig::run(HookEvent::PostInstall)?;
         match (self.rebuild, self.is_system) {

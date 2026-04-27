@@ -62,6 +62,8 @@ pub fn write_changes_to_config(content: &str, dest_path: &str) -> anyhow::Result
 }
 pub fn user_input() -> String {
     let mut user_input = String::new();
+    print!("> ");
+    std::io::Write::flush(&mut std::io::stdout()).ok();
     std::io::stdin()
         .read_line(&mut user_input)
         .unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
