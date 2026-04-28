@@ -34,8 +34,26 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 - Hooks which allow to automate actions
 - Autocompletion like Pacman and apt  
 
-## Requirements
-- NixOS
+## How it works
+
+Niux manages your packages by editing your nix config files directly.
+If markers incorrect Niux tell you it 
+
+To use it, you do use default markers or add custom:
+
+```nix
+home.packages = [
+  # niux-home
+  firefox
+  vim
+  # niux-home-end
+];
+```
+
+When you run `niux -Hi firefox`, it inserts the package after the start marker.
+When you run `niux -Hr firefox`, it removes it — but only between the markers, so the rest of your config is never touched.
+
+> Markers are configurable via your config
 
 ## Installation
 
