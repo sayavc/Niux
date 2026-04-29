@@ -44,6 +44,22 @@ pub fn list_do_package(&self) -> anyhow::Result<()> {
     } 
     Ok(())
 }
+pub fn list_do_package_type(&self) -> anyhow::Result<()> {
+    let config = NiuxConfig::get()?;
+    let config_path = if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
+    let content = fs::read_to_string(config_path)?;
+    let lines = Self::search_range(&content.lines().map(String::from).collect(), self.is_system)?;
+    for name in &self.name {
+        let found = lines.iter().any(|l| l.trim() == name.as_str());
+        if found {
+            println!("{}", name.blue());
+        } else {
+            println!("{}: not found", name.blue());
+        }
+    }
+    Ok(())
+}
+
 #[allow(clippy::ptr_arg)]
 fn search_range(lines: &Vec<String>, marker: bool) -> anyhow::Result<Vec<String>> {
     let config = NiuxConfig::get()?;

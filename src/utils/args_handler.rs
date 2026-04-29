@@ -59,7 +59,13 @@ pub fn handle(target: &Target, args: &Args, package: &Package) -> anyhow::Result
     }
     if args.list && !args.home && !args.system && args.package.is_none() {
         HookConfig::run(HookEvent::PreList)?;
-            Package::list_all()?;
+        Package::list_all()?;
+        HookConfig::run(HookEvent::PostList)?;
+        return Ok(true);
+    }
+    if args.list && (args.home || args.system) && args.package.is_some() {
+        HookConfig::run(HookEvent::PreList)?;
+        Package::list_do_package_type(package)?;
         HookConfig::run(HookEvent::PostList)?;
         return Ok(true);
     }
