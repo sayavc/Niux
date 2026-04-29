@@ -3,10 +3,16 @@ _niux_completions() {
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   
   case "$prev" in
-    -l|-Hl|-Sl|-Hr|-Sr|-Hra|-Sra)
+    -l)
       COMPREPLY=($(compgen -W "$(niux -l)" -- "$cur"))
       ;;
-    -Hi|-Si|-Hia|-Sia)
+    -Hl|-Hr|-Hra)
+      COMPREPLY=($(compgen -W "$(niux -Hl)" -- "$cur"))
+      ;;
+    -Sl|-Sr|-Sra)
+      COMPREPLY=($(compgen -W "$(niux -Sl)" -- "$cur"))
+      ;;
+    -Hi|-Hia|-Si|-Sia)
       COMPREPLY=($(compgen -W "$(niux --search $cur)" -- "$cur"))
       ;;
   esac
