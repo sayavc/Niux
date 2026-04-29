@@ -37,7 +37,7 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 ## How it works
 
 Niux manages your packages by editing your nix config files directly.
-If markers incorrect Niux tell you it 
+If markers a incorrect, Niux will tell you
 
 To use it, you do use default markers or add custom:
 
@@ -57,7 +57,7 @@ When you run `niux -Hr firefox`, it removes it — but only between the markers,
 
 ## Installation
 
-## With flakes (home-manager)
+## With flakes (standalone home-manager)
 
 Add to your `flake.nix` inputs:
 
@@ -71,10 +71,12 @@ inputs.niux = {
 Pass niux to home-manager via extraSpecialArgs:
 
 ```nix 
+outputs = inputs@{ nixpkgs, home-manager, niux, ... }: {
 homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
     pkgs = nixpkgs.legacyPackages.x86_64-linux;
     extraSpecialArgs = { inputs = { inherit niux; }; };
     modules = [ ./home/home.nix ];
+   };
 };
 ```
 
@@ -90,7 +92,49 @@ Then add to your home.nix:
 
 Run `home-manager switch` to apply.
 
-> **Note:** Non-flake and NixOS module home-manager installation docs coming soon,
+## With flakes (module home-manager)
+
+Add to your `flake.nix` inputs:
+
+```nix
+inputs.niux = {
+    url = "github:sayavc/niux";
+    inputs.nixpkgs.follows = "nixpkgs";
+};
+```
+
+Pass niux to home-manager:
+
+```nix
+outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
+  nixosConfigurations.yourhostname = nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    modules = [
+      ./configuration.nix
+      home-manager.nixosModules.home-manager
+      {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.extraSpecialArgs = { inputs = { inherit niux; }; };
+        home-manager.users.yourusername = import ./home.nix;
+      }
+    ];
+  };
+};
+```
+
+Add to `home.nix`:
+
+```nix
+# home.nix
+{ inputs, pkgs, ... }: {
+  home.packages = [
+    inputs.niux.packages.${pkgs.system}.default
+  ];
+}
+```
+
+> **Note:** Non-flake installation docs coming soon,
 > Contributions welcome!
 
 ## Configuration
@@ -102,14 +146,20 @@ niux --gen-config
 
 Or at a custom path:
 ```bash
-niux --gen-config --default-path-config ~/my/path/niux.kdl
+niux --default-path-config /my/path/niux.kdl
+niux --gen-config 
+```
+and for hooks:
+```bash 
+niux --default-hook-path-config /my/path/niux.kdl 
+niux --gen-config
 ```
 To display the path:
 ```bash
 niux --get-current-path
 ```
 
-> **Note:** `--default-path-config` requires an existing `.kdl` file. Always run `--gen-config` first.
+> **Note:** `--default-path-config` and `--default-hook-path-config` requires an existing `.kdl` file.
 
 ## Usage
 
@@ -182,7 +232,6 @@ niux --clear                # Run nix-collect-garbage
 ```
 
 ### Hooks 
-Check in /etc/niux_hooks.kdl 
 Example:
 ```kdl
 actions {
@@ -205,6 +254,7 @@ actions {
 | `-U, --update` | Update flakes |
 | `--gen-config` | Generate default configuration |
 | `--default-path-config` | Use custom config path |
+| `--default-hook-path-config` | Use custom hook config path |
 | `--get-current-path` | Get config paths |
 | `--clear` | Run garbage collection |
 | `--search`| Search packages from nixpkgs |
