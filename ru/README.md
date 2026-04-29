@@ -34,12 +34,29 @@
 - Хуки которые позволяют автоматизировать действия
 - Автодополнение как в Pacman и apt 
 
-## Требования
-- NixOS
+## Как это работает
+
+Niux управляет пакетами, напрямую редактируя твои nix конфиг файлы.
+Можно использовать маркеры по умолчанию или добавить свои.
+Если маркеры указаны неверно — Niux сообщит об этом.
+
+```nix
+home.packages = [
+  # niux-home
+  firefox
+  vim
+  # niux-home-end
+];
+```
+
+Когда ты запускаешь `niux -Hi firefox` — пакет вставляется после начального маркера.
+Когда запускаешь `niux -Hr firefox` — пакет удаляется, но только между маркерами, так что остальной конфиг никогда не затрагивается.
+
+> Маркеры настраиваются через конфиг
 
 ## Установка
 
-## flakes (home-manager)
+## flakes (standalone home-manager)
 
 Добавьте в `flake.nix`:
 
@@ -53,10 +70,12 @@ inputs.niux = {
 Передать niux в home-manager через extraSpecialArgs:
 
 ```nix 
+outputs = inputs@{ nixpkgs, home-manager, niux, ... }: {
 homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
     pkgs = nixpkgs.legacyPackages.x86_64-linux;
     extraSpecialArgs = { inputs = { inherit niux; }; };
     modules = [ ./home/home.nix ];
+   };
 };
 ```
 
@@ -71,8 +90,51 @@ homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
 ```
 
 Запустите `home-manager switch` для применения.
-> **Примечание** Установка без flakes и с модульным home-manager появятся позже.
+
+## flakes (module home-manager)
+
+Добавьте в `flake.nix`:
+
+```nix
+inputs.niux = {
+    url = "github:sayavc/niux";
+    inputs.nixpkgs.follows = "nixpkgs";
+};
+```
+
+Передать в home-manager:
+
+```nix
+outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
+  nixosConfigurations.yourhostname = nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    modules = [
+      ./configuration.nix
+      home-manager.nixosModules.home-manager
+      {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.extraSpecialArgs = { inputs = { inherit niux; }; };
+        home-manager.users.yourusername = import ./home.nix;
+      }
+    ];
+  };
+};
+```
+
+Добавить в `home.nix`:
+```nix
+# home.nix
+{ inputs, pkgs, ... }: {
+  home.packages = [
+    inputs.niux.packages.${pkgs.system}.default
+  ];
+}
+```
+
+> **Примечание** Установка без flakes появятся позже.
 > Контрибуции приветствуются!
+
 ## Конфигурация
 
 Сгенерируйте конфиг по умолчанию:
@@ -82,7 +144,12 @@ niux --gen-config
 
 Или по своему пути:
 ```bash
-niux --gen-config --default-path-config ~/my/path/niux.kdl
+niux --default-path-config /my/path/niux.kdl
+```
+Или для хуков:
+```bash
+niux --default-hook-path-config /my/path/niux.kdl 
+niux --gen-config 
 ```
 
 Показать текущий путь:
@@ -90,7 +157,7 @@ niux --gen-config --default-path-config ~/my/path/niux.kdl
 niux --get-current-path
 ```
 
-> **Примечание:** `--default-path-config` требует существующего `.kdl` файла. Всегда сначала запускайте `--gen-config`.
+> **Примечание:** `--default-path-config` и `--default-hook-path-config` требует существующего `.kdl` файла.
 
 ## Использование
 
@@ -121,6 +188,7 @@ niux -HSa               # Пересобрать оба конфига
 | `-U, --update` | Обновить флейки |
 | `--gen-config` | Сгенерировать конфигурацию |
 | `--default-path-config` | Указать свой путь к конфигу |
+| `--default-hook-path-config` | Указать путь к конфигу хуков |
 | `--get-current-path`| Получить пути конфигов | 
 | `--clear` | Очистка мусора |
 | `--search`| Поиск|

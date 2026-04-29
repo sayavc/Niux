@@ -11,10 +11,13 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
+        date = builtins.substring 0 8 self.lastModifiedDate;
+        formatted = "${builtins.substring 0 4 date}-${builtins.substring 4 2 date}-${builtins.substring 6 2 date}";
+        rev = self.rev or "dirty";
       in {
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = manifest.name;
-          version = manifest.version;
+          version = "${manifest.version}-${formatted}-${builtins.substring 0 7 rev}";
 
           nativeBuildInputs = [ pkgs.installShellFiles ];
 
