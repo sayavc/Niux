@@ -1,26 +1,48 @@
 #compdef niux
 
 _niux_packages() {
-  local packages
-  packages=(${(f)"$(niux -l)"})
-  compadd -a packages
+    local packages
+    packages=(${(f)"$(niux -l)"})
+    compadd -a packages
+}
+
+_niux_packages_home() {
+    local packages
+    packages=(${(f)"$(niux -Hl)"})
+    compadd -a packages
+}
+
+_niux_packages_system() {
+    local packages
+    packages=(${(f)"$(niux -Sl)"})
+    compadd -a packages
 }
 
 _niux_search() {
-  local packages
-  packages=(${(f)"$(niux --search $words[3])"})
-  compadd -a packages
+    local packages
+    packages=(${(f)"$(niux --search $words[3])"})
+    compadd -a packages
 }
 
 _niux() {
-  case $words[2] in
-    -l|-Hl|-Sl|-Hr|-Sr|-Hra|-Sra)
-      _niux_packages
-      ;;
-    -Hi|-Si|-Hia|-Sia)
-      _niux_search
-      ;;
-  esac
+    case $words[2] in
+        -l)
+            _niux_packages
+            ;;
+        -Hl|-Hr|-Hra)
+            _niux_packages_home
+            ;;
+        -Sl|-Sr|-Sra)
+            _niux_packages_system
+            ;;
+        -Hi|-Si|-Hia|-Sia)
+            _niux_search
+            ;;
+        *)
+            # Фоллбэк для остальных флагов/аргументов
+            _arguments -s -w \
+                '(-l -Hl -Sl -Hi -Si)'{-h,--help}'[Show help]' \
+                '(-V,--version)'{-V,--version}'[Print version]'
+            ;;
+    esac
 }
-
-_niux

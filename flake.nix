@@ -23,7 +23,6 @@
 
           postInstall = ''
            installShellCompletion --zsh --name _niux ${./completions/_niux}
-           installShellCompletion --bash ${./completions/niux.bash}
            installShellCompletion --fish ${./completions/niux.fish}
           '';
 
