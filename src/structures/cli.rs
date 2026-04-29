@@ -12,37 +12,37 @@ use clap::{ Parser, ArgGroup };
         .multiple(true)
 ))]
 pub struct Args {
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "default_path_config", "list", "clear"],
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list", "clear", "config", "hook_config", "show_path"],
         help = "Generate a default configuration file")]
     pub gen_config: bool,
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list", "hook_config"],
         help = "Set default configuration path")]
-    pub default_path_config: Option<std::path::PathBuf>,
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list", "default_path_config"],
+    pub config: Option<std::path::PathBuf>,
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],
         help = "Set default hook configuration path")]
-    pub default_hook_path_config: Option<std::path::PathBuf>,
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
+    pub hook_config: Option<std::path::PathBuf>,
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],
         help = "Displays current path")]
-    pub get_current_path: bool,
-    #[arg(long, conflicts_with_all = ["remove", "update", "install"],
+    pub show_path: bool,
+    #[arg(long,
         help = "search packages with nix-search")]
     pub search: bool,
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "gen_config", "list"],
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],
         help = "This is nix-collect-garbage")]
     pub clear: bool,
-    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "default_path_config", "default_hook_path_config", "update", "list", "clear", "search", "get_current_path"],
+    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "config", "hook_config", "update", "list", "clear", "search", "show_path"],
         help = "Manage home packages")]
     pub home: bool,
-    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "default_path_config", "default_hook_path_config", "update", "list", "clear", "search", "get_current_path"],
+    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "config", "hook_config", "update", "list", "clear", "search", "show_path"],
         help = "Manage system packages")]
     pub system: bool,
     #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search"], 
         help = "Install packages")]
     pub install: bool,
-    #[arg(short = 'r', conflicts_with_all = ["install", "update", "search"],
+    #[arg(short = 'r', conflicts_with_all = ["update", "search"],
         help = "Remove packages")]
     pub remove: bool,
-    #[arg(short = 'U', conflicts_with_all = ["install", "remove", "search"], 
+    #[arg(short = 'U', conflicts_with_all = ["search"], 
         help = "Update flakes")]
     pub update: bool,
     #[arg(short = 'a', requires = "target_group", 
@@ -51,5 +51,6 @@ pub struct Args {
     #[arg(short = 'l', conflicts_with_all = ["install", "remove", "update", "apply"], 
         help = "List packages")]
     pub list: bool,
+    #[arg[hide = true]]
     pub package: Option<Vec<String>>,
 }
