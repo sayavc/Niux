@@ -144,20 +144,21 @@ niux --gen-config
 
 Или по своему пути:
 ```bash
-niux --default-path-config /my/path/niux.kdl
+niux --config /my/path/niux.kdl
+niux --gen-config
 ```
 Или для хуков:
 ```bash
-niux --default-hook-path-config /my/path/niux.kdl 
-niux --gen-config 
+niux --hook-config /my/path/niux.kdl
+niux --gen-config
 ```
 
 Показать текущий путь:
 ```bash
-niux --get-current-path
+niux --show-path
 ```
 
-> **Примечание:** `--default-path-config` и `--default-hook-path-config` требует существующего `.kdl` файла.
+> **Примечание:** После `--default-path-config` и `--default-hook-path-config` необходим `--gen-config`
 
 ## Использование
 
@@ -179,17 +180,17 @@ niux -HSa               # Пересобрать оба конфига
 
 | Флаг | Описание |
 |------|----------|
-| `-H, --home` | Цель — пакеты home |
-| `-S, --system` | Цель — пакеты system |
-| `-i, --install` | Установить пакеты |
-| `-r, --remove` | Удалить пакеты |
-| `-a, --apply` | Применить и пересобрать конфиг |
-| `-l, --list` | Список или поиск пакетов |
-| `-U, --update` | Обновить флейки |
+| `-H` - Home | Цель — пакеты home |
+| `-S` - System | Цель — пакеты system |
+| `-i` - install(add) | Установить пакеты |
+| `-r` - remove | Удалить пакеты |
+| `-a` - apply(rebuild) | Пересобрать конфиг |
+| `-l` - list | Список или поиск пакетов |
+| `-U` - Update | Обновить флейки |
 | `--gen-config` | Сгенерировать конфигурацию |
-| `--default-path-config` | Указать свой путь к конфигу |
-| `--default-hook-path-config` | Указать путь к конфигу хуков |
-| `--get-current-path`| Получить пути конфигов | 
+| `--config` | Указать свой путь к конфигу |
+| `--hook-config` | Указать путь к конфигу хуков |
+| `--show-path`| Получить пути конфигов | 
 | `--clear` | Очистка мусора |
 | `--search`| Поиск|
 

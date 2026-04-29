@@ -146,20 +146,20 @@ niux --gen-config
 
 Or at a custom path:
 ```bash
-niux --default-path-config /my/path/niux.kdl
+niux --config /my/path/niux.kdl
 niux --gen-config 
 ```
 and for hooks:
 ```bash 
-niux --default-hook-path-config /my/path/niux.kdl 
+niux --hook-config /my/path/niux.kdl 
 niux --gen-config
 ```
 To display the path:
 ```bash
-niux --get-current-path
+niux --show-path
 ```
 
-> **Note:** `--default-path-config` and `--default-hook-path-config` requires an existing `.kdl` file.
+> **Note:** use `--gen-config` after `--default-path-config` and `--default-hook-path-config`
 
 ## Usage
 
@@ -245,17 +245,17 @@ actions {
 
 | Flag | Description |
 |------|-------------|
-| `-H, --home` | Target home packages |
-| `-S, --system` | Target system packages |
-| `-i, --install` | Install packages |
-| `-r, --remove` | Remove packages |
-| `-a, --apply` | Apply and rebuild configuration |
-| `-l, --list` | List or search packages |
-| `-U, --update` | Update flakes |
+| `-H` - Home | Target home packages |
+| `-S` - System | Target system packages |
+| `-i` - install | Install packages |
+| `-r` - remove | Remove packages |
+| `-a` - apply(rebuild) | Apply and rebuild configuration |
+| `-l` - list | List or search packages |
+| `-U` - Update | Update flakes |
 | `--gen-config` | Generate default configuration |
-| `--default-path-config` | Use custom config path |
-| `--default-hook-path-config` | Use custom hook config path |
-| `--get-current-path` | Get config paths |
+| `--config` | Use custom config path |
+| `--hook-config` | Use custom hook config path |
+| `--show-path` | Get config paths |
 | `--clear` | Run garbage collection |
 | `--search`| Search packages from nixpkgs |
 
