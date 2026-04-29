@@ -30,7 +30,7 @@ impl Package {
             let mut indices_to_remove: Vec<usize> = lines[marker_start..=marker_end]
                 .iter()
                 .enumerate()
-                .filter(|(_, line)| self.name.iter().any(|n| line.contains(n.as_str())))
+                .filter(|(_, line)| self.name.iter().any(|n| line.trim() == n.as_str()))
                 .map(|(j, _)| marker_start + j)
                 .collect();
             indices_to_remove.sort_unstable_by(|a, b| b.cmp(a));
