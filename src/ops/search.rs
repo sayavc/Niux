@@ -3,6 +3,7 @@ use crate::structures::{ Package, HookEvent, hook_config::HookConfig };
 use crate::utils::{ run_bash, command_exists };
 impl Package { 
     pub fn search(&self) -> anyhow::Result<()>  {
+        log::info!("search is started, package: {:?}", self.name);
         HookConfig::run(HookEvent::PreSearch)?;
         if !command_exists("nix-search") {
             bail!("nix-search is not installed");

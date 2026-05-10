@@ -1,12 +1,12 @@
 use colored::Colorize;
 use anyhow::{ Context, bail };
-use crate::structures::{ Package, NiuxConfig, HookEvent, hook_config::HookConfig };
+use crate::structures::{ Package, NiuxConfig, };
 use crate::error;
 use crate::utils::{ write_changes_to_config };
 use std::fs;
 impl Package {
     pub fn remove(&self) -> anyhow::Result<()>  {
-        HookConfig::run(HookEvent::PreRemove)?;
+        log::info!("Remove is started, rebuild: {}, is_system: {}, package: {:?}", self.rebuild, self.is_system, self.name);
         let config = NiuxConfig::get()?;
         let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
         if !std::path::Path::new(&config_path).exists() {
@@ -44,12 +44,6 @@ impl Package {
         }
         write_changes_to_config(&new_content, &config_path)?;
         println!("{}", "Package removed with config".green());
-        HookConfig::run(HookEvent::PostRemove)?;
-        match (self.rebuild, self.is_system) {
-        (true, false) => NiuxConfig::rebuild_home(self)?,
-        (true, true) => NiuxConfig::rebuild_system(self)?,
-        _ => return Ok(()),
-    }
         Ok(())
     }
 }

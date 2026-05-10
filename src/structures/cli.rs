@@ -5,7 +5,7 @@ use clap::{ Parser, ArgGroup };
     about = "A simple CLI tool for managing NixOS packages",
     long_about = "Declarative NixOS/home-manager CLI package manager written in Rust.\n\nManage system and home packages, update flake inputs, and rebuild configurations.",
     before_help = "NIUX - NixOS Package Manager",
-    after_help = "EXAMPLES:\n  niux -Hi firefox                Install firefox for home\n  niux -Hr firefox                Remove firefox from home\n  niux -Si vim                    Install vim for system\n  niux -Sr vim                    Remove vim from system\n  niux -HSi firefox vim           Install firefox for home and vim for system\n\nBUILD & APPLY:\n  niux -Ha                        Rebuild home config\n  niux -Sa                        Rebuild system config\n  niux -HSa                       Rebuild home and system configs\n  niux -Hia firefox               Install firefox for home and rebuild\n  niux -Sia vim                   Install vim for system and rebuild\n  niux -HSia firefox vim          Install packages and rebuild both configs\n\nLISTING & SEARCH:\n  niux -Hl                        List packages in home config\n  niux -Sl                        List packages in system config\n  niux -Hl firefox                Search \"firefox\" in home config\n  niux -l firefox                 Search \"firefox\" in home and system configs\n\nUPDATES:\n  niux -U                         Update all flakes\n  niux -Ua                        Update flakes and rebuild\n  niux -Ua nixpkgs                Update specific flake input (e.g., nixpkgs)\n  niux -USa                       Update flakes and rebuild system and home\n  niux -USHa                      Update flakes and rebuild system and home configs\n\nFor more information, visit: https://github.com/sayavc/niux")]
+    after_help = "EXAMPLES:\n  niux -Hi firefox                Install firefox for home\n  niux -Hr firefox                Remove firefox from home\n  niux -Si vim                    Install vim for system\n  niux -Sr vim                    Remove vim from system\n  niux -HSi firefox vim           Install firefox for home and vim for system\n\nBUILD & APPLY:\n  niux -Ha                        Rebuild home config\n  niux -Sa                        Rebuild system config\n  niux -HSa                       Rebuild home and system configs\n  niux -Hia firefox               Install firefox for home and rebuild\n  niux -Sia vim                   Install vim for system and rebuild\n  Install packages and rebuild both configs\n\nLISTING & SEARCH:\n  niux -Hl                        List packages in home config\n  niux -Sl                        List packages in system config\n  niux -Hl firefox                Search \"firefox\" in home config\n  niux -l firefox                 Search \"firefox\" in home and system configs\n\nUPDATES:\n  niux -U                         Update all flakes\n  niux -Ua                        Update flakes and rebuild\n  niux -Ua nixpkgs                Update specific flake input (e.g., nixpkgs)\n  niux -USa                       Update flakes and rebuild system and home\n  niux -USHa                      Update flakes and rebuild system and home configs\n\nFor more information, visit: https://github.com/sayavc/niux")]
 #[clap(group(
         ArgGroup::new("target_group")
         .args(["home", "system"])
@@ -37,9 +37,11 @@ pub struct Args {
         help = "Manage system packages")]
     pub system: bool,
     #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search"], 
+        requires = "package",
         help = "Install packages")]
     pub install: bool,
     #[arg(short = 'r', conflicts_with_all = ["update", "search"],
+        requires = "package",
         help = "Remove packages")]
     pub remove: bool,
     #[arg(short = 'U', conflicts_with_all = ["search"], 

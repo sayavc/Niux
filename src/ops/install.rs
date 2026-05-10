@@ -3,10 +3,10 @@ use anyhow::{ Context, bail };
 use std::fs;
 use crate::error;
 use crate::utils::{ write_changes_to_config };
-use crate::structures::{ Package, HookEvent, hook_config::HookConfig, NiuxConfig };
+use crate::structures::{ Package, NiuxConfig };
 impl Package {
     pub fn install(&self) -> anyhow::Result<()> {
-        HookConfig::run(HookEvent::PreInstall)?;
+        log::info!("Install is started, rebuild: {}, is_system: {}, package: {:?}", self.rebuild, self.is_system, self.name);
         let config = NiuxConfig::get()?;
         let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
         if !std::path::Path::new(&config_path).exists() {
@@ -35,12 +35,6 @@ impl Package {
         }
         write_changes_to_config(&new_content, &config_path)?;
         println!("{}", "Package added to config".green());
-        HookConfig::run(HookEvent::PostInstall)?;
-        match (self.rebuild, self.is_system) {
-            (true, false) => NiuxConfig::rebuild_home(self)?,
-            (true, true) => NiuxConfig::rebuild_system(self)?,
-            _ => return Ok(()),
-        }
         Ok(())
     }
 }
