@@ -14,38 +14,27 @@ use structures::{
 };
 fn main() {
     pretty_env_logger::init();
+    if let Err(e) = run() {
+        error!("{e}");
+        std::process::exit(1);
+    }
+}
+fn run() -> anyhow::Result<()> {
     let args = Args::parse();
     let target = args.target();
     let action = args.action();
-    let rebuild = args.rebuild_mode();
     let package = Package {
         name: args.package.clone().unwrap_or_default(),
         is_system: matches!(target, Target::System),
         rebuild: args.apply,
     };
-    match validate(&args) {
-        Ok(()) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
+    validate(&args)?;
+    if action.dispatch_config(&args)? {
+        return Ok(());
     }
-    match action.dispatch_config(&args) {
-        Ok(true) => return,
-        Ok(false) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
-    match action.pre_hooks() {
-        Ok(()) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
-    match action.dispatch(&package) {
-        Ok(()) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
-    match rebuild.rebuild_wrapper(&package) {
-        Ok(()) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
-    match action.post_hooks() {
-        Ok(()) => {},
-        Err(e) => { error!("{e}"); std::process::exit(1); }
-    }
+    action.pre_hooks()?;
+    action.dispatch(&package)?;
+    args.rebuild_mode().rebuild_wrapper(&package)?;
+    action.post_hooks()?;
+    Ok(())
 }
