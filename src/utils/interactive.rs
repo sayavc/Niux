@@ -1,6 +1,9 @@
 use anyhow::Context;
 use colored::Colorize;
-use crate::structures::{ NiuxConfig, Commands };
+use crate::structures::{
+    NiuxConfig,
+    models::Commands,
+};
 use crate::utils::common::{ run_bash, user_input };
 impl NiuxConfig {
     pub fn autodetect() -> anyhow::Result<Commands> {
@@ -20,10 +23,13 @@ impl NiuxConfig {
                 _ => { println!("Inccorect answer"); continue; }
             };
         };
+        println!("{}", "Please specify your text editor".blue());
+        let editor = user_input().trim().to_string();
         Ok(Commands {
             rebuild_system: Self::rebuild_system_command(flakes)?,
             rebuild_home: Self::rebuild_home_command(flakes, home_manager)?,
             update_flakes: Self::update_flakes_command(flakes),
+            editor,
         })
     }
     fn rebuild_system_command(flakes: bool) -> anyhow::Result<String> {

@@ -36,6 +36,8 @@ impl HookConfig {
             HookEvent::PostInstall => "post-install",
             HookEvent::PreRemove => "pre-remove",
             HookEvent::PostRemove => "post-remove",
+            HookEvent::PreEdit => "pre-edit",
+            HookEvent::PostEdit => "post-edit",
             HookEvent::PreRebuild => "pre-rebuild",
             HookEvent::PostRebuild => "post-rebuild",
             HookEvent::PreUpdate => "pre-update",

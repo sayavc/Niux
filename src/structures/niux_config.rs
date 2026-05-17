@@ -10,7 +10,7 @@ pub struct NiuxConfig {
     #[knuffel(child)]
     pub features: Option<Features>,
     #[knuffel(child)]
-    pub security: Security,
+    pub environment: Environment,
     #[knuffel(child)]
     pub commands: Commands,
 }
@@ -42,9 +42,11 @@ pub struct Features {
     pub nvd_integration: bool,
 }
 #[derive(knuffel::Decode)]
-pub struct Security {
+pub struct Environment {
     #[knuffel(child, unwrap(argument))]
     pub su_type: String,
+    #[knuffel(child, unwrap(argument))]
+    pub editor: String,
 }
 #[derive(knuffel::Decode)]
 pub struct Commands {

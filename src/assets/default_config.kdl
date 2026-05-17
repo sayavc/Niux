@@ -12,8 +12,9 @@ config-markers {{
 features {{
     nvd-integration false
 }}
-security {{
+environment {{
     su-type "{}"
+    editor "{}"
 }}
 commands {{
     rebuild-home "{}"
