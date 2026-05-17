@@ -21,6 +21,10 @@ impl Package {
                 bail!("{}.local/state does not exist", home.display());
             }
         };
+        let config_dir = state_dir.join("niux");
+        if !config_dir.exists() {
+            std::fs::create_dir_all(config_dir).with_context(|| "Failed to create state dir: {e}")?;
+        }
         let backup_path = state_dir.join("niux/config_backup.nix");
         let content = std::fs::read_to_string(&config_path)?;
         let old_packages = search_range(&content.lines().map(String::from).collect(), self.is_system)?.join("\n");
