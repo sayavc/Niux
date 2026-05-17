@@ -1,5 +1,5 @@
 use std::fs;
-use anyhow::{ Context };
+use anyhow::{ Context, bail};
 use colored::Colorize;
 use crate::structures::AutoGenNiuxConfig;
 use crate::utils::{get_privilege_type, user_input, writer_write};
@@ -23,6 +23,16 @@ impl NiuxConfig {
     pub fn get() -> anyhow::Result<NiuxConfig> {
         let cfg = AutoGenNiuxConfig::get()?;
         let content = fs::read_to_string(&cfg.config_path).map_err(|e| anyhow::anyhow!("{e:?}")).with_context(|| format!("Failed to read config: {}", cfg.config_path.display()))?;
-        knuffel::parse::<NiuxConfig>("config.kdl", &content).map_err(|e| anyhow::anyhow!("Failed to parse {}: {e:?}", cfg.config_path.display()))
+        Ok(match knuffel::parse::<NiuxConfig>("config.kdl", &content) {
+            Ok(parsed_config) => parsed_config,
+            Err(e) => {
+                let mut s = String::new();
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .context("{e}")?;
+                eprintln!("{s}");
+                bail!("Failed to parse config");
+            }
+        })
     }
 }
