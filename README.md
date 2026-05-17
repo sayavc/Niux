@@ -33,13 +33,14 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 - Supports NixOS with and without flakes
 - Hooks which allow to automate actions
 - Autocompletion like Pacman and apt  
+- Built-in generation diffing powered by `nvd` integraion
 
 ## How it works
 
 Niux manages your packages by editing your nix config files directly.
-If markers a incorrect, Niux will tell you
+If markers are incorrect, Niux will tell you
 
-To use it, you do use default markers or add custom:
+To use it, you can use default markers or add custom:
 
 ```nix
 home.packages = [
@@ -167,8 +168,11 @@ niux --show-path
 ```bash
 niux -Hi firefox        # Install firefox for home
 niux -Si vim            # Install vim for system
+niux -Hia firefox       # Install firefox for home and rebuild system
 
 niux -Hr firefox        # Remove firefox from home
+
+niux -He                # Edit packages mode
 
 niux -Hl                # List home packages
 niux -l firefox         # Search everywhere
@@ -194,6 +198,11 @@ niux -Sr vim                # Remove vim from system
 niux -Sra vim               # Remove and rebuild system
 niux -Hr firefox vim        # Remove multiple from home
 niux -Sr firefox vim        # Remove multiple from system
+
+niux -He                    # Edit home packages
+niux -Se                    # Edit system packages
+niux -Sea                   # Edit system packages and rebuild config
+niux -Hea                   # Edit home packages and rebuild config 
 ```
 
 ### Listing & Search
@@ -239,7 +248,7 @@ actions {
     run "zsh /etc/niux_post_rebuild.zsh"
 }
 ```
-> available actions: install, remove, rebuild, update, list, clear, search 
+> available actions: install, remove, edit, rebuild, update, list, clear, search 
 
 ## Commands Reference
 
@@ -249,6 +258,7 @@ actions {
 | `-S` - System | Target system packages |
 | `-i` - install | Install packages |
 | `-r` - remove | Remove packages |
+| `-e` - edit | Edit mode |
 | `-a` - apply(rebuild) | Apply and rebuild configuration |
 | `-l` - list | List or search packages |
 | `-U` - Update | Update flakes |

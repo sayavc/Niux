@@ -166,7 +166,9 @@ niux --show-path
 ```bash
 niux -Hi firefox        # Установить firefox в home
 niux -Si vim            # Установить vim в system
+niux -Hia firefox       # Установить firefox и пересобрать конфиг
 niux -Hr firefox        # Удалить firefox из home
+niux -He                # Режим редактирования пакетов
 niux -Hl                # Список пакетов home
 niux -l firefox         # Поиск везде
 niux -U                 # Обновить все флейки
@@ -184,6 +186,7 @@ niux -HSa               # Пересобрать оба конфига
 | `-S` - System | Цель — пакеты system |
 | `-i` - install(add) | Установить пакеты |
 | `-r` - remove | Удалить пакеты |
+| `-e` - edit | Режима редактирования |
 | `-a` - apply(rebuild) | Пересобрать конфиг |
 | `-l` - list | Список или поиск пакетов |
 | `-U` - Update | Обновить флейки |

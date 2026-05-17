@@ -35,7 +35,7 @@ impl Package {
             Err(e) => bail!("{e}"),
         }
         std::fs::copy(&config_path, state_dir.join(&backup_path))?;
-        println!("backup created; {}", backup_path.display());
+        println!("backup created: {}", backup_path.display().to_string().blue());
         let new_packages = std::fs::read_to_string(tmp.path())?.trim_end().to_string();
         if old_packages == new_packages {
             println!("{}", "Nothing has changed...".yellow());
