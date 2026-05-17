@@ -22,7 +22,7 @@ impl Args {
             _ if self.gen_config => Action::GenConfig,
             _ if self.config.is_some() => Action::SetConfigPath,
             _ if self.hook_config.is_some() => Action::SetHookConfigPath,
-            _ => unreachable!("Clap ensures one flag is always present"),
+            _ => Action::None,
         }
     }
     pub fn list_mode(&self) -> List {

@@ -15,7 +15,7 @@ impl Action {
             Action::Search => HookConfig::run(HookEvent::PreSearch),
             Action::Clear => HookConfig::run(HookEvent::PreClear),
             Action::Update(_) => HookConfig::run(HookEvent::PreUpdate),
-            _ => unreachable!(""),
+            _ => Ok(()),
         }
     }
     pub fn post_hooks(&self) -> anyhow::Result<()> {
@@ -27,7 +27,7 @@ impl Action {
             Action::Search => HookConfig::run(HookEvent::PostSearch),
             Action::Clear => HookConfig::run(HookEvent::PostClear),
             Action::Update(_) => HookConfig::run(HookEvent::PostUpdate),
-            _ => unreachable!(),
+            _ => Ok(()),
         }
     }
 }

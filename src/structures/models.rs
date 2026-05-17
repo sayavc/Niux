@@ -29,7 +29,7 @@ pub struct Commands {
     pub editor: String,
 }
 pub enum Target { System, Home, Both, None }
-pub enum Action { Install, Remove, Edit, Search, List(List), Clear, Update(Update), ShowPath, GenConfig, SetConfigPath, SetHookConfigPath }
+pub enum Action { Install, Remove, Edit, Search, List(List), Clear, Update(Update), ShowPath, GenConfig, SetConfigPath, SetHookConfigPath, None}
 pub enum List { Package, Type, All }
 pub enum Update { Just, Flakes }
 pub enum Rebuild { Home, System, Both, None }
