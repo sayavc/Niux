@@ -13,6 +13,7 @@ impl Args {
         match () {
             _ if self.install => Action::Install,
             _ if self.remove => Action::Remove,
+            _ if self.edit => Action::Edit,
             _ if self.search => Action::Search,
             _ if self.list => Action::List(self.list_mode()),
             _ if self.clear => Action::Clear,

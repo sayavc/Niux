@@ -36,14 +36,17 @@ pub struct Args {
     #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "config", "hook_config", "update", "list", "clear", "search", "show_path"],
         help = "Manage system packages")]
     pub system: bool,
-    #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search"], 
+    #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search", "edit"], 
         requires = "package",
         help = "Install packages")]
     pub install: bool,
-    #[arg(short = 'r', conflicts_with_all = ["update", "search"],
+    #[arg(short = 'r', conflicts_with_all = ["update", "search", "edit"],
         requires = "package",
         help = "Remove packages")]
     pub remove: bool,
+    #[arg(short = 'e', conflicts_with_all = ["update", "search"],
+        help = "Packages edit mode")]
+    pub edit: bool,
     #[arg(short = 'U', conflicts_with_all = ["search"], 
         help = "Update flakes")]
     pub update: bool,

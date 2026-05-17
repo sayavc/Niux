@@ -3,8 +3,7 @@ use anyhow::{ Context };
 use colored::Colorize;
 use crate::structures::AutoGenNiuxConfig;
 use crate::utils::{get_privilege_type, user_input, writer_write};
-#[allow(unused_imports)]
-use crate::structures::{ NiuxConfig, Commands };
+use crate::structures::NiuxConfig;
 
 impl NiuxConfig {
     pub fn create() -> anyhow::Result<()>  {
@@ -14,7 +13,7 @@ impl NiuxConfig {
             if user_input().trim() != "y" { return Ok(()); }
         }  
         let commands = NiuxConfig::autodetect()?;
-        let default_config = format!(include_str!("../assets/default_config.kdl"), get_privilege_type(), commands.rebuild_home, commands.rebuild_system, commands.update_flakes);
+        let default_config = format!(include_str!("../assets/default_config.kdl"), get_privilege_type(), commands.editor, commands.rebuild_home, commands.rebuild_system, commands.update_flakes);
         let tmp = tempfile::NamedTempFile::new().with_context(|| "Failed to create tmp file".to_string())?;
         fs::write(tmp.path(), default_config)?;
         println!("Config created in {} please edit it", cfg.config_path.to_string_lossy().green());
