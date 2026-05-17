@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{ Context, bail };
 use colored::Colorize;
 use std::fs;
 use crate::structures::{ hook_config::HookConfig, models::HookEvent, AutoGenNiuxConfig };
@@ -23,7 +23,17 @@ impl HookConfig {
     pub fn get() -> anyhow::Result<HookConfig> {
         let hook_config_path = AutoGenNiuxConfig::get()?.hooks_config_path;
         let content = fs::read_to_string(&hook_config_path).with_context(|| format!("Failed to read config: {})", hook_config_path.display()))?;
-        knuffel::parse::<HookConfig>("niux_hooks.kdl", &content).with_context(|| format!("Failed to parse Hook config: {}", hook_config_path.display()))
+        Ok(match knuffel::parse::<HookConfig>("niux_hooks.kdl", &content) {
+            Ok(parsed_config) => parsed_config,
+            Err(e) => {
+                let mut s = String::new();
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .context("{e}")?;
+                eprintln!("{s}");
+                bail!("Failed to parse hook config");
+            }
+        })
     }
     pub fn run(event: HookEvent) -> anyhow::Result<()> {
         let cfg = AutoGenNiuxConfig::get()?;
