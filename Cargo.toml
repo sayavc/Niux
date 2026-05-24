@@ -1,6 +1,7 @@
 [package]
 name = "niux"
 version = "26.4.1"
+license = "GPL-3.0-or-later"
 edition = "2024"
 
 [dependencies]
