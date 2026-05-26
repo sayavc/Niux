@@ -1,25 +1,31 @@
+<div align="center">
+
 # Niux
+
 **English** | [Русский](./ru/README.md)
 
-<img align='right' src='assets/icon.png' width='260px' alt="niux logo"/>
-
-
 Declarative NixOS/home-manager CLI package manager written in Rust.
-Tired of editing 'configuration.nix' every time you need a package? Niux lets you manage packages with short commands. 
 
 [![Release](https://img.shields.io/github/v/release/sayavc/niux?label=Release&logo=github&color=7aa2f7)](https://github.com/sayavc/niux/releases/latest) 
 [![License](https://img.shields.io/badge/License-GPL%20v3-bb9af7.svg?logo=gnu)](LICENSE) 
 [![Language](https://img.shields.io/badge/language-Rust-orange?logo=rust)](https://www.rust-lang.org) 
+
+</div>
+
+> [!NOTE]
+> *"1000+ lines of Rust code that could be effectively replaced by a single shell script."*
+> — **An awesome-nix maintainer**
+
 ## Why Niux?
 
-Working with `home-manager` and `NixOS` is powerful, but constantly editing configuration files and running `switch` can feel tedious.
+Managing `home-manager` and `NixOS` packages manually requires opening configuration files, adding entries to package lists, and executing rebuild commands.
 
-**Niux** makes it simple and fast: a lightweight CLI that lets you install, remove, and manage packages **declaratively** with short, intuitive commands — like `apt` or `pacman`, but without breaking Nix's declarative philosophy.
+**Niux** automates this workflow by providing a lightweight CLI to install, remove, and manage packages via short, intuitive commands — similar to traditional package managers like `apt` or `pacman` — while strictly preserving Nix's declarative nature.
 
-- Install with one command (`niux -Hi firefox`)
-- Automatically rebuild configs when needed
-- Update flakes, clean up the system, and more
-- Built in Rust — fast, reliable, and secure
+- **Manage packages with a single command** (e.g., `niux -Hi firefox`)
+- **Automate configuration rebuilds** immediately after modifications
+- **Update flakes, clean system generations**, and manage environment states
+- **Leverage native Rust performance** for safe, fast, and resource-efficient execution
 
 In short: Niux brings the convenience of traditional package managers to NixOS and home-manager while staying fully declarative.
 
