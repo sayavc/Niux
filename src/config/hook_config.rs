@@ -16,8 +16,8 @@ impl HookConfig {
         let config = include_str!("../assets/hook_config.kdl");
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), config)?;
-        writer_write(tmp.path().to_str().unwrap(), cfg.hooks_config_path.to_str().unwrap())?;
-        println!("Config created in {}", cfg.hooks_config_path.to_str().unwrap().green());
+        writer_write(tmp.path().to_str().context("Invalid tmp path")?, cfg.hooks_config_path.to_str().context("Invalid hook path")?)?;
+        println!("Config created in {}", cfg.hooks_config_path.to_str().context("Invalid config path")?.green());
         Ok(())
     }
     pub fn get() -> anyhow::Result<HookConfig> {

@@ -18,14 +18,14 @@ fn bash(args: &[&str], type_bash: bool) -> anyhow::Result<String> {
         if args[0] == "sudo" { NiuxConfig::get()?.environment.su_type }
         else { args[0].to_string() }
     } else {
-        if args[0] == "sudo" { get_privilege_type() }
+        if args[0] == "sudo" { get_privilege_type()? }
         else { args[0].to_string() }
     };
     let result = process::Command::new(first)
         .args(&args[1..])
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .output()
-        .unwrap_or_else(|e| { error!("{e}"); process::exit(1); });
+        .context("Failed to run bash command")?;
     if !result.status.success() {
         error!("{}", String::from_utf8_lossy(&result.stderr));
         process::exit(1);
@@ -58,7 +58,7 @@ pub fn command_exists(cmd: &str) -> bool {
 pub fn write_changes_to_config(content: &str, dest_path: &str) -> anyhow::Result<()> {
     let tmp = NamedTempFile::new().context("Failed to create tmp file")?;
     std::fs::write(tmp.path(), content).context("Failed to write content in tmp")?;
-    writer_write(tmp.path().to_str().unwrap(), dest_path)?;
+    writer_write(tmp.path().to_str().context("Invalid tmp path")?, dest_path)?;
     Ok(())
 }
 pub fn user_input() -> String {
