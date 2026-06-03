@@ -56,6 +56,15 @@ home.packages = [
   # niux-home-end
 ];
 ```
+Also you can not add `start` marker:
+```
+home.packages = [
+  firefox
+  vim
+#end
+];
+```
+In that case `home.packages = [` will be used as `start` marker
 
 When you run `niux -Hi firefox`, it inserts the package after the start marker.
 When you run `niux -Hr firefox`, it removes it — but only between the markers, so the rest of your config is never touched.
