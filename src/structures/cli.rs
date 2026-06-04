@@ -2,6 +2,7 @@ use clap::{ Parser, ArgGroup };
 #[derive(Parser)]
 #[command(
     name = "niux",
+    version,
     about = "A simple CLI tool for managing NixOS packages",
     long_about = "Declarative NixOS/home-manager CLI package manager written in Rust.\n\nManage system and home packages, update flake inputs, and rebuild configurations.",
     before_help = "NIUX - NixOS Package Manager",
