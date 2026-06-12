@@ -7,10 +7,13 @@ use crate::utils::get_privilege_type;
 pub fn run_bash_interactive(args: &[&str]) -> anyhow::Result<()> {
     let first = if args[0] == "sudo" { NiuxConfig::get()?.environment.su_type }
     else { args[0].to_string()};
-    process::Command::new(first)
+    let status = process::Command::new(first)
         .args(&args[1..])
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .status()?;
+    if !status.success() {
+        bail!("Command executed unsuccessfully (exit code: {}), (command: {})", status.code().unwrap_or(-1), args.join(" "));
+    }
     Ok(())
 }
 fn bash(args: &[&str], type_bash: bool) -> anyhow::Result<String> {
