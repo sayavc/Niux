@@ -15,10 +15,6 @@ impl Package {
                 home
             }
         };
-        let nvd_dir = state_dir.join("niux");
-        if !&nvd_dir.exists() { fs::create_dir_all(&nvd_dir).inspect_err(|e| error!("Failed to create integration file: {e}")).ok(); }
-        if !&nvd_dir.join("nvd_integration.txt").exists() { fs::File::create(nvd_dir.join("nvd_integration.txt")).inspect_err(|e| error!("Failed to create integration file: {e}")).ok(); }
-
         let (profiles_path, prefix) = if self.is_system {
             (std::path::PathBuf::from("/nix/var/nix/profiles"), "system-")
         } else {
@@ -48,17 +44,7 @@ impl Package {
         entries.sort();
         let new = entries[entries.len() - 1];
         let old = entries[entries.len() - 2];
-        let content = fs::read_to_string(state_dir.join("niux/nvd_integration.txt"))?; 
-        let lines: Vec<&str> = content.lines().collect(); 
-        let line = if self.is_system { 0 } else { 1 };
-        if lines.get(line).is_some_and(|l| l.contains(&new.to_string())) {
-            return Ok(());
-        }
         run_bash_interactive(&["nvd", "diff", &format!("{}/{prefix}{old}-link", profiles_path.display()), &format!("{}/{prefix}{new}-link", profiles_path.display())])?;
-        let content = format!("{}\n{}",
-            if self.is_system { new.to_string() } else { lines.first().unwrap_or(&"").to_string() },
-            if self.is_system { lines.get(1).unwrap_or(&"").to_string() } else { new.to_string() });
-        fs::write(nvd_dir.join("nvd_integration.txt"), content).inspect_err(|e| error!("Failed to write nvd_interation txt file for no re-output of diff: {e}")).ok();
         Ok(())
     }
 }
