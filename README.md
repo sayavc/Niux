@@ -39,14 +39,14 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 - Supports NixOS with and without flakes
 - Hooks which allow to automate actions
 - Autocompletion like Pacman and apt  
-- Built-in generation diffing powered by `nvd` integraion
+- Built-in generation diffing powered by `nvd` integration
 
 ## How it works
 
 Niux manages your packages by editing your nix config files directly.
 If markers are incorrect, Niux will tell you
 
-To use it, you can use default markers or add custom:
+To get started use default markers or add custom:
 
 ```nix
 home.packages = [
@@ -56,7 +56,7 @@ home.packages = [
   # niux-home-end
 ];
 ```
-Also you can not add `start` marker:
+Also, you can omit the `start` marker:
 ```
 home.packages = [
   firefox
@@ -175,7 +175,7 @@ To display the path:
 niux --show-path
 ```
 
-> **Note:** use `--gen-config` after `--default-path-config` and `--default-hook-path-config`
+> **Note:** use `--gen-config` after `--config` and `--hook-config`
 
 ## Usage
 

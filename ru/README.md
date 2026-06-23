@@ -26,7 +26,7 @@
 - **Обновление флейков, и просмотр диффов генераций через интеграцию с `nvd`**
 - **Использование нативной производительности Rust** для безопасного, быстрого и эффективного выполнения
 
-Коротко: Niux привносит удобство традиционных пакетных менеджеров в NixOS и home-manager, оставаясь на 100% декларативным.
+Коротко: Niux привносит удобство традиционных пакетных менеджеров в `NixOS` и `home-manager`, оставаясь на 100% декларативным.
 
 ## Возможности
 
@@ -34,15 +34,15 @@
 - Управление пакетами home и system декларативно
 - Написан на Rust для производительности и надёжности
 - Простой и понятный синтаксис команд
-- Поддержка standalone и module home-manager
-- Поддержка NixOS с флейками и без
+- Поддержка standalone и module `home-manager`
+- Поддержка `NixOS` с флейками и без
 - Хуки которые позволяют автоматизировать действия
-- Автодополнение как в Pacman и apt 
+- Автодополнение как в `Pacman` и `apt` 
 - Опциональный встроенный вывод диффа генераций на базе утилиты `nvd`
 
 ## Как это работает
 
-Niux управляет пакетами, напрямую редактируя твои конфигурационные файлы Nix. 
+Niux управляет пакетами, напрямую редактируя твои конфигурационные файлы `Nix`. 
 Если маркеры расставлены неверно, утилита сразу сообщит об этом.
 
 Вы можете использовать маркеры по умолчанию или задать собственные:
@@ -63,7 +63,7 @@ home.packages = [
 #end 
 ];
 ```
-В таком случае `home.packages = [` можно использовать как маркер для старта
+В таком случае `home.packages = [` можно использовать как маркер для старта.
 
 Когда ты запускаешь `niux -Hi firefox` — пакет вставляется после начального маркера.
 Когда запускаешь `niux -Hr firefox` — пакет удаляется, но только между маркерами, так что остальной конфиг никогда не затрагивается.
@@ -72,7 +72,7 @@ home.packages = [
 
 ## Установка
 
-## flakes (standalone home-manager)
+## flakes (standalone `home-manager`)
 
 Добавьте в `flake.nix`:
 
@@ -83,7 +83,7 @@ inputs.niux = {
 };
 ```
 
-Передать niux в home-manager через extraSpecialArgs:
+Передать niux в `home-manager` через `extraSpecialArgs`:
 
 ```nix 
 outputs = inputs@{ nixpkgs, home-manager, niux, ... }: {
@@ -95,7 +95,7 @@ homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
 };
 ```
 
-Добавить в home.nix:
+Добавить в `home.nix`:
 
 ```nix
 { inputs, pkgs, ... }: {
@@ -107,7 +107,7 @@ homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
 
 Запустите `home-manager switch` для применения.
 
-## flakes (module home-manager)
+## `flakes` (module home-manager)
 
 Добавьте в `flake.nix`:
 
@@ -118,7 +118,7 @@ inputs.niux = {
 };
 ```
 
-Передать в home-manager:
+Передать в `home-manager`:
 
 ```nix
 outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
@@ -148,7 +148,7 @@ outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
 }
 ```
 
-> **Примечание** Установка без flakes появятся позже.
+> **Примечание** Установка без `flakes` появится позже.
 > Контрибуции приветствуются!
 
 ## Конфигурация
@@ -174,7 +174,7 @@ niux --gen-config
 niux --show-path
 ```
 
-> **Примечание:** После `--default-path-config` и `--default-hook-path-config` необходим `--gen-config`
+> **Примечание:** После `--config` и `--hook-config` необходим `--gen-config`
 
 ## Использование
 
