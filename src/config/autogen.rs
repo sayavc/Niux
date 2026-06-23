@@ -1,9 +1,9 @@
 use crate::structures::AutoGenNiuxConfig;
 use anyhow::{ Context };
-use crate::utils::{ writer_init };
 use std::path::PathBuf;
+use crate::utils::{ writer_init };
 impl AutoGenNiuxConfig {
-    pub fn create(path: Option<std::path::PathBuf>, hooks_path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
+    pub fn create(path: Option<PathBuf>, hooks_path: Option<PathBuf>) -> anyhow::Result<()> {
         let current = AutoGenNiuxConfig::get().unwrap_or_else(|_| AutoGenNiuxConfig {
             config_path: PathBuf::from("/etc/niux.kdl"),
             hooks_config_path: PathBuf::from("/etc/niux_hooks.kdl"), 

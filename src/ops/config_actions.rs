@@ -21,7 +21,7 @@ impl Package {
     }
     pub fn set_config_path(args: &Args) -> anyhow::Result<()> {
         if let Some(path) = args.config.clone() {
-        AutoGenNiuxConfig::create(AutoGenNiuxConfig::get().ok().map(|c| c.config_path), Some(path))?;
+        AutoGenNiuxConfig::create(Some(path), AutoGenNiuxConfig::get().ok().map(|c| c.hooks_config_path))?;
         }
         Ok(())
     }
