@@ -7,7 +7,7 @@ impl HookConfig {
     pub fn create() -> anyhow::Result<()> {
         let cfg = AutoGenNiuxConfig::get()?;
         if std::path::Path::new(&cfg.hooks_config_path).exists() {
-            println!("{}", "Hooks config is exists, rewrite? y/n".blue());
+            println!("{}", "Hooks config already exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
         } else {
             println!("{}", "Create hook config? y/n".blue());

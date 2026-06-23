@@ -25,7 +25,7 @@ impl Package {
                 bail!("Marker is not found: {config_marker_end}");
             };
             if marker_start > marker_end {
-                bail!("Marker end goes earlier marker home, please move your packages in separate config or use custom markers");
+                bail!("Marker end comes before the home marker. Please move your packages to a separate config or use custom markers");
             }
             let mut indices_to_remove: Vec<usize> = lines[marker_start..=marker_end]
                 .iter()
@@ -43,7 +43,7 @@ impl Package {
             return Ok(())
         }
         write_changes_to_config(&new_content, &config_path)?;
-        println!("{}", "Package removed with config".green());
+        println!("{}", "Package removed from config".green());
         Ok(())
     }
 }

@@ -85,7 +85,7 @@ pub fn search_range(lines: &Vec<String>, marker: bool) -> anyhow::Result<Vec<Str
         bail!("Marker is not found: {config_marker_end}");
     };
     if marker_start >= marker_end {
-        bail!("marker end goes earlier marker home, please move your packages in separate config or use custom markers");
+        bail!("marker end comes before the home marker. Please move your packages to a separate config or use custom markers");
     }
     Ok(lines[marker_start+1..marker_end].to_vec())
 }

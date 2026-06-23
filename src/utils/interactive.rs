@@ -12,7 +12,7 @@ impl NiuxConfig {
             match user_input().trim() {
                 "y" => break true,
                 "n" => break false,
-                _ => { println!("Inccorect answer"); continue; }
+                _ => { println!("Incorrect answer"); continue; }
             };
         };
         println!("{}", "Do you have standalone home-manager? y/n".blue());
@@ -20,7 +20,7 @@ impl NiuxConfig {
             match user_input().trim() {
                 "y" => break true,
                 "n" => break false,
-                _ => { println!("Inccorect answer"); continue; }
+                _ => { println!("Incorrect answer"); continue; }
             };
         };
         println!("{}", "Please specify your text editor".blue());
