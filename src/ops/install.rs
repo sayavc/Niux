@@ -24,11 +24,11 @@ impl Package {
             return Ok(())
         }
         let config_marker = self.ptype.get_marker_start(&config.config_markers);
-        let content = fs::read_to_string(&config_path).with_context(|| format!("Failed to read config: {config_path}"))?;
+        let content = fs::read_to_string(config_path).with_context(|| format!("Failed to read config: {config_path}"))?;
         let mut lines: Vec<String> = content.lines().map(String::from).collect();
         for i in 0..lines.len() {
-            if lines[i].contains(&config_marker) {
-                let Some(marker_pos) = lines.iter().position(|l| l.contains(&config_marker)) else {
+            if lines[i].contains(config_marker) {
+                let Some(marker_pos) = lines.iter().position(|l| l.contains(config_marker)) else {
                     bail!("Marker is not found");
                 };
                 let indent = lines[marker_pos + 1].len() - lines[marker_pos + 1].trim_start().len();
@@ -43,7 +43,7 @@ impl Package {
             println!("{}", "Nothing has changed...".yellow());
             return Ok(());
         }
-        write_changes_to_config(&new_content, &config_path)?;
+        write_changes_to_config(&new_content, config_path)?;
         println!("{}", "Package added to config".green());
         Ok(())
     }

@@ -27,7 +27,7 @@ impl Package {
             std::fs::create_dir_all(config_dir).with_context(|| "Failed to create state dir: {e}")?;
         }
         let backup_path = state_dir.join("niux/config_backup.nix");
-        let content = std::fs::read_to_string(&config_path)?;
+        let content = std::fs::read_to_string(config_path)?;
         let old_packages = search_range(&content.lines().map(String::from).collect(), &self.ptype)?.join("\n");
         let tmp = NamedTempFile::new().context("Failed to create tmp file")?;
         std::fs::write(tmp.path(), &old_packages)?;
@@ -35,7 +35,7 @@ impl Package {
             Ok(_) => {},
             Err(e) => bail!("{e}"),
         }
-        std::fs::copy(&config_path, state_dir.join(&backup_path))?;
+        std::fs::copy(config_path, state_dir.join(&backup_path))?;
         println!("backup created: {}", backup_path.display().to_string().blue());
         let new_packages = std::fs::read_to_string(tmp.path())?.trim_end().to_string();
         if old_packages == new_packages {
@@ -43,7 +43,7 @@ impl Package {
             return Ok(())
         }
         let result = content.replace(&old_packages, &new_packages);
-        write_changes_to_config(&result, &config_path)?;
+        write_changes_to_config(&result, config_path)?;
         println!("{}", "Packages edited".green());
         Ok(())
     }

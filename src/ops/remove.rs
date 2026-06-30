@@ -26,13 +26,13 @@ impl Package {
 
         let (config_marker, config_marker_end) = self.ptype.get_markers(&config.config_markers);
 
-        let content = fs::read_to_string(&config_path).with_context(|| format!("Failed to read config: {config_path}"))?; 
+        let content = fs::read_to_string(config_path).with_context(|| format!("Failed to read config: {config_path}"))?; 
 
         let mut lines: Vec<String> = content.lines().map(String::from).collect();
-            let Some(marker_start) = lines.iter().position(|l| l.contains(&config_marker)) else {
+            let Some(marker_start) = lines.iter().position(|l| l.contains(config_marker)) else {
                 bail!("Marker is not found: {config_marker}");
             };
-            let Some(marker_end) = lines.iter().position(|l| l.contains(&config_marker_end)) else {
+            let Some(marker_end) = lines.iter().position(|l| l.contains(config_marker_end)) else {
                 bail!("Marker is not found: {config_marker_end}");
             };
             if marker_start > marker_end {
@@ -53,8 +53,8 @@ impl Package {
              println!("{}", "Package not found in config".yellow());
             return Ok(())
         }
-        write_changes_to_config(&new_content, &config_path)?;
-        println!("{}", "Package removed from config".green());
+        write_changes_to_config(&new_content, config_path)?;
+        println!("{}", "Package removed with config".green());
         Ok(())
     }
 }
