@@ -4,14 +4,14 @@ use anyhow::bail;
 use crate::structures::{
     NiuxConfig,
     Package,
-    PackageType
+    PackageType,
 };
 use crate::utils::{
     run_bash_interactive,
     command_exists
 };
 impl Package {
-    pub fn nvd(&self) -> anyhow::Result<()>  {
+    pub fn nvd(ptype: PackageType) -> anyhow::Result<()>  {
         if !NiuxConfig::get()?.features.unwrap_or_default().nvd_integration { return Ok(()); }
         if !command_exists("nvd") { bail!("Nvd is not installed"); }
         let state_dir = match dirs::state_dir() {
@@ -22,7 +22,7 @@ impl Package {
                 home
             }
         };
-        let (profiles_path, prefix) = match self.ptype {
+        let (profiles_path, prefix) = match ptype {
             PackageType::System => (std::path::PathBuf::from("/nix/var/nix/profiles"), "system-"),
             PackageType::Home => {
                 let local = state_dir.join("nix/profiles");

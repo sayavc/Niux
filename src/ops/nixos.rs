@@ -3,6 +3,7 @@ use crate::{
     structures::{
         NiuxConfig,
         Package,
+        PackageType,
         HookEvent,
         hook_config::HookConfig,
     },
@@ -13,7 +14,7 @@ impl Package {
         HookConfig::run(HookEvent::PreRebuild)?;
         let args = shell_words::split(&NiuxConfig::get()?.commands.rebuild_home)?;
         run_bash_interactive(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
-        Package::nvd(self)?;
+        Package::nvd(PackageType::Home)?;
         HookConfig::run(HookEvent::PostRebuild)?;
         Ok(())
     }
@@ -21,7 +22,7 @@ impl Package {
         HookConfig::run(HookEvent::PreRebuild)?;
         let args = shell_words::split(&NiuxConfig::get()?.commands.rebuild_system)?;
         run_bash_interactive(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
-        Package::nvd(self)?;
+        Package::nvd(PackageType::System)?;
         HookConfig::run(HookEvent::PostRebuild)?;
         Ok(())
     }

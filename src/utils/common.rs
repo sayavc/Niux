@@ -87,10 +87,10 @@ pub fn user_input() -> String {
 pub fn search_range(lines: &Vec<String>, ptype: &PackageType) -> anyhow::Result<Vec<String>> {
     let config = NiuxConfig::get()?;
     let (marker_start, marker_end) = ptype.get_markers(&config.config_markers);
-    let Some(marker_start) = lines.iter().position(|l| l.contains(&marker_start)) else {
+    let Some(marker_start) = lines.iter().position(|l| l.contains(marker_start)) else {
         bail!("Marker is not found: {marker_start}");
     };
-    let Some(marker_end) = lines.iter().position(|l| l.contains(&marker_end)) else {
+    let Some(marker_end) = lines.iter().position(|l| l.contains(marker_end)) else {
         bail!("Marker is not found: {marker_end}");
     };
     if marker_start >= marker_end {
