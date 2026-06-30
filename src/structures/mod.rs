@@ -6,3 +6,4 @@ pub use cli::*;
 pub use models::Package;
 pub use niux_config::*;
 pub use models::HookEvent;
+pub use models::PackageType;

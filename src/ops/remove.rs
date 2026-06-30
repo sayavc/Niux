@@ -1,20 +1,31 @@
 use colored::Colorize;
-use anyhow::{ Context, bail };
-use crate::structures::{ Package, NiuxConfig, };
+use anyhow::{ 
+    Context, 
+    bail 
+};
+use crate::structures::{ 
+    Package,
+    PackageType,
+    NiuxConfig,
+};
 use crate::error;
-use crate::utils::{ write_changes_to_config };
+use crate::utils::{
+    write_changes_to_config,
+    GetCfgData,
+};
 use std::fs;
 impl Package {
     pub fn remove(&self) -> anyhow::Result<()>  {
-        log::info!("Remove is started, rebuild: {}, is_system: {}, package: {:?}", self.rebuild, self.is_system, self.name);
+        log::info!("Remove is started, rebuild: {}, is_system: {}, package: {:?}", self.rebuild, match self.ptype { PackageType::System => "system", _ => "home"}, self.name);
         let config = NiuxConfig::get()?;
-        let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
+        let config_path = self.ptype.get_config_path(&config.config_paths);
         if !std::path::Path::new(&config_path).exists() {
             error!("{}", "Config path is wrong");
             return Ok(())
         }
-        let config_marker = if self.is_system { config.config_markers.marker_system } else { config.config_markers.marker_home };
-        let config_marker_end = if self.is_system { config.config_markers.marker_system_end } else { config.config_markers.marker_home_end };
+
+        let (config_marker, config_marker_end) = self.ptype.get_markers(&config.config_markers);
+
         let content = fs::read_to_string(&config_path).with_context(|| format!("Failed to read config: {config_path}"))?; 
 
         let mut lines: Vec<String> = content.lines().map(String::from).collect();

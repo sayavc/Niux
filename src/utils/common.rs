@@ -1,8 +1,18 @@
 use std::process;
 use crate::error;
 use tempfile::NamedTempFile;
-use anyhow::{ Context, bail };
-use crate::structures::{ NiuxConfig };
+use anyhow::{ 
+    Context, 
+    bail 
+};
+use crate::structures::{
+    NiuxConfig,
+    PackageType,
+};
+use crate::structures::niux_config::{
+    ConfigMarkers,
+    ConfigPaths,
+};
 use crate::utils::get_privilege_type;
 pub fn run_bash_interactive(args: &[&str]) -> anyhow::Result<()> {
     let first = if args[0] == "sudo" { NiuxConfig::get()?.environment.su_type }
@@ -74,18 +84,46 @@ pub fn user_input() -> String {
     user_input
 }
 #[allow(clippy::ptr_arg)]
-pub fn search_range(lines: &Vec<String>, marker: bool) -> anyhow::Result<Vec<String>> {
+pub fn search_range(lines: &Vec<String>, ptype: &PackageType) -> anyhow::Result<Vec<String>> {
     let config = NiuxConfig::get()?;
-    let config_marker = if marker { config.config_markers.marker_system } else { config.config_markers.marker_home };
-    let config_marker_end = if marker { config.config_markers.marker_system_end } else { config.config_markers.marker_home_end };
-    let Some(marker_start) = lines.iter().position(|l| l.contains(&config_marker)) else {
-        bail!("Marker is not found: {config_marker}");
+    let (marker_start, marker_end) = ptype.get_markers(&config.config_markers);
+    let Some(marker_start) = lines.iter().position(|l| l.contains(&marker_start)) else {
+        bail!("Marker is not found: {marker_start}");
     };
-    let Some(marker_end) = lines.iter().position(|l| l.contains(&config_marker_end)) else {
-        bail!("Marker is not found: {config_marker_end}");
+    let Some(marker_end) = lines.iter().position(|l| l.contains(&marker_end)) else {
+        bail!("Marker is not found: {marker_end}");
     };
     if marker_start >= marker_end {
         bail!("marker end comes before the home marker. Please move your packages to a separate config or use custom markers");
     }
     Ok(lines[marker_start+1..marker_end].to_vec())
+}
+pub trait GetCfgData {
+    fn get_marker_start<'a>(&self, markers: &'a ConfigMarkers) -> &'a str;
+    fn get_marker_end<'a>(&self, markers: &'a ConfigMarkers) -> &'a str;
+    fn get_config_path<'a>(&self, paths: &'a ConfigPaths) -> &'a str;
+
+    fn get_markers<'a>(&self, markers: &'a ConfigMarkers) -> (&'a str, &'a str) {
+        (self.get_marker_start(markers), self.get_marker_end(markers))
+    }
+}
+impl GetCfgData for PackageType {
+    fn get_marker_start<'a>(&self, markers: &'a ConfigMarkers) -> &'a str {
+        match self {
+            PackageType::Home => &markers.marker_home,
+            PackageType::System => &markers.marker_system,
+        }
+    }
+    fn get_marker_end<'a>(&self, markers: &'a ConfigMarkers) -> &'a str {
+        match self {
+            PackageType::Home => &markers.marker_home_end,
+            PackageType::System => &markers.marker_system_end,
+        }
+    }
+    fn get_config_path<'a>(&self, paths: &'a ConfigPaths) -> &'a str {
+        match self {
+            PackageType::Home => &paths.config_path_home,
+            PackageType::System => &paths.config_path_system,
+        }
+    }
 }

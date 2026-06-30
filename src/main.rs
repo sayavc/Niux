@@ -9,8 +9,9 @@ use structures::{
     Args,
     Package,
     models::{
+        PackageType,
         Target,
-    },
+    }
 };
 fn main() {
     pretty_env_logger::init();
@@ -25,7 +26,10 @@ fn run() -> anyhow::Result<()> {
     let action = args.action();
     let package = Package {
         name: args.package.clone().unwrap_or_default(),
-        is_system: matches!(target, Target::System),
+        ptype: match target {
+            Target::System => PackageType::System,
+            _ => PackageType::Home,
+        },
         rebuild: args.apply,
     };
     validate(&args)?;

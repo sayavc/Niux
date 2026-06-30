@@ -9,11 +9,12 @@ use crate::utils::{
     search_range,
     run_bash_interactive,
     write_changes_to_config,
+    GetCfgData,
 };
 impl Package {
     pub fn edit(&self) -> anyhow::Result<()> {
         let config = NiuxConfig::get()?;
-        let config_path =  if self.is_system { config.config_paths.config_path_system } else { config.config_paths.config_path_home };
+        let config_path = self.ptype.get_config_path(&config.config_paths);
         let state_dir = match dirs::state_dir() {
             Some(num) => num,
             None => {
@@ -27,7 +28,7 @@ impl Package {
         }
         let backup_path = state_dir.join("niux/config_backup.nix");
         let content = std::fs::read_to_string(&config_path)?;
-        let old_packages = search_range(&content.lines().map(String::from).collect(), self.is_system)?.join("\n");
+        let old_packages = search_range(&content.lines().map(String::from).collect(), &self.ptype)?.join("\n");
         let tmp = NamedTempFile::new().context("Failed to create tmp file")?;
         std::fs::write(tmp.path(), &old_packages)?;
         match run_bash_interactive(&[&config.environment.editor, tmp.path().to_str().context("path to tmp contains invalid UTF-8")?]) {

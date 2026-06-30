@@ -1,8 +1,15 @@
 use std::fs;
 use crate::error;
 use anyhow::bail;
-use crate::structures::{ NiuxConfig, models::Package };
-use crate::utils::{run_bash_interactive, command_exists};
+use crate::structures::{
+    NiuxConfig,
+    Package,
+    PackageType
+};
+use crate::utils::{
+    run_bash_interactive,
+    command_exists
+};
 impl Package {
     pub fn nvd(&self) -> anyhow::Result<()>  {
         if !NiuxConfig::get()?.features.unwrap_or_default().nvd_integration { return Ok(()); }
@@ -15,18 +22,19 @@ impl Package {
                 home
             }
         };
-        let (profiles_path, prefix) = if self.is_system {
-            (std::path::PathBuf::from("/nix/var/nix/profiles"), "system-")
-        } else {
-            let local = state_dir.join("nix/profiles");
-            let per_user = std::path::PathBuf::from(format!("/nix/var/nix/profiles/per-user/{}", std::env::var("USER")?));
-            if local.exists() {
-                (local, "home-manager-")
-            } else if per_user.exists() {
-                (per_user, "home-manager-") 
-            } else {
-                error!("home-manager is not installed");
-                std::process::exit(1);
+        let (profiles_path, prefix) = match self.ptype {
+            PackageType::System => (std::path::PathBuf::from("/nix/var/nix/profiles"), "system-"),
+            PackageType::Home => {
+                let local = state_dir.join("nix/profiles");
+                let per_user = std::path::PathBuf::from(format!("/nix/var/nix/profiles/per-user/{}", std::env::var("USER")?));
+                if local.exists() {
+                    (local, "home-manager-")
+                } else if per_user.exists() {
+                    (per_user, "home-manager-") 
+                } else {
+                    error!("home-manager is not installed");
+                    std::process::exit(1);
+                }
             }
         };
 

@@ -26,6 +26,7 @@ pub struct ConfigPaths {
 }
 
 #[derive(knuffel::Decode)]
+#[derive(Clone)]
 pub struct ConfigMarkers {
     #[knuffel(child, unwrap(argument))]
     pub marker_home: String,
