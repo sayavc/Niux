@@ -6,7 +6,7 @@ use crate::utils::{writer_write, run_bash_interactive, user_input };
 impl HookConfig {
     pub fn create() -> anyhow::Result<()> {
         let cfg = AutoGenNiuxConfig::get()?;
-        if std::path::Path::new(&cfg.hooks_config_path).exists() {
+        if cfg.hooks_config_path.exists() {
             println!("{}", "Hooks config already exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
         } else {
@@ -37,7 +37,7 @@ impl HookConfig {
     }
     pub fn run(event: HookEvent) -> anyhow::Result<()> {
         let cfg = AutoGenNiuxConfig::get()?;
-        if !std::path::Path::new(&cfg.hooks_config_path).exists() {
+        if !cfg.hooks_config_path.exists() {
             return Ok(());
         } 
         let config = HookConfig::get()?;

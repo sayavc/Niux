@@ -1,21 +1,63 @@
-use crate::structures::AutoGenNiuxConfig;
+use crate::{
+    utils::writer_init,
+    structures::{
+        AutoGenNiuxConfig,
+        models::{
+            ConfigPath,
+            HooksPath,
+        },
+    },
+};
 use anyhow::{ Context };
 use std::path::PathBuf;
-use crate::utils::{ writer_init };
+use std::sync::OnceLock;
+pub trait ConfigPathKind {
+    fn transform(s: &AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig;
+}
+impl ConfigPathKind for ConfigPath {
+    fn transform(s: &AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
+        AutoGenNiuxConfig {
+            config_path: path,
+            hooks_config_path: s.hooks_config_path.to_path_buf(),
+        }
+    }
+}
+impl ConfigPathKind for HooksPath {
+    fn transform(s: &AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
+        AutoGenNiuxConfig {
+            config_path: s.config_path.to_path_buf(),
+            hooks_config_path: path,
+        }
+    }
+}
+impl Default for AutoGenNiuxConfig {
+    fn default() -> Self {
+        Self {
+            config_path: "/etc/niux.kdl".into(),
+            hooks_config_path: "/etc/niux_hooks.kdl".into(),
+        }
+    }
+}
 impl AutoGenNiuxConfig {
-    pub fn create(path: Option<PathBuf>, hooks_path: Option<PathBuf>) -> anyhow::Result<()> {
-        let current = AutoGenNiuxConfig::get().unwrap_or_else(|_| AutoGenNiuxConfig {
-            config_path: PathBuf::from("/etc/niux.kdl"),
-            hooks_config_path: PathBuf::from("/etc/niux_hooks.kdl"), 
-        });
-        let path = path.unwrap_or(current.config_path);
-        let hooks_path = hooks_path.unwrap_or(current.hooks_config_path);
-        writer_init(path.to_str().context("Invalid config path")?, hooks_path.to_str().context("Invalid hook path")?)?;
+    fn get_cached() -> &'static Self {
+        static INSTANCE: OnceLock<AutoGenNiuxConfig> = OnceLock::new();
+        INSTANCE.get_or_init(|| {
+            Self::get().unwrap_or_else(|_| Self::default())
+        })
+    }
+    pub fn create<T>(path: PathBuf) -> anyhow::Result<()>
+        where 
+            T: ConfigPathKind {
+                let s = T::transform(Self::get_cached(), path);
+                writer_init(s)?;
+                Ok(())
+    }
+    pub fn init() -> anyhow::Result<()> {
+        writer_init(Self::default())?;
         Ok(())
     }
-    pub fn get() -> anyhow::Result<AutoGenNiuxConfig> {
+    pub fn get() -> anyhow::Result<Self> {
         let content = std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl").with_context(|| "Failed to read config: /var/lib/niux/niux_autogen.kdl".to_string())?;
-        knuffel::parse::<AutoGenNiuxConfig>("niux_autogen.kdl", &content).with_context(|| "Failed to parse config: /var/lib/niux_autogen.kdl".to_string())
+        knuffel::parse::<Self>("niux_autogen.kdl", &content).with_context(|| "Failed to parse config: /var/lib/niux/niux_autogen.kdl".to_string())
     }
-
 }

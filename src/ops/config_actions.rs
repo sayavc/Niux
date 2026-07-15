@@ -4,6 +4,10 @@ use crate::structures::{
     NiuxConfig,
     hook_config::HookConfig,
     Args,
+    models::{
+        HooksPath,
+        ConfigPath,
+    },
 };
 use colored::Colorize;
 impl Package {
@@ -13,21 +17,21 @@ impl Package {
             None => println!("none"),
         }
     }
-    pub fn gen_config(args: &Args) -> anyhow::Result<()> {
-        AutoGenNiuxConfig::create(args.config.clone(), args.hook_config.clone())?;
+    pub fn gen_config() -> anyhow::Result<()> {
+        AutoGenNiuxConfig::init()?;
         NiuxConfig::create()?;
         HookConfig::create()?;
         Ok(())
     }
     pub fn set_config_path(args: &Args) -> anyhow::Result<()> {
-        if let Some(path) = args.config.clone() {
-        AutoGenNiuxConfig::create(Some(path), AutoGenNiuxConfig::get().ok().map(|c| c.hooks_config_path))?;
+        if let Some(path) = &args.config {
+            AutoGenNiuxConfig::create::<ConfigPath>(path.to_path_buf())?;
         }
         Ok(())
     }
     pub fn set_hook_config_path(args: &Args) -> anyhow::Result<()> {
-        if let Some(path) = args.hook_config.clone() {
-        AutoGenNiuxConfig::create(AutoGenNiuxConfig::get().ok().map(|c| c.config_path), Some(path))?;
+        if let Some(path) = &args.hook_config {
+            AutoGenNiuxConfig::create::<HooksPath>(path.to_path_buf())?;
         }
         Ok(())
     }

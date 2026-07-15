@@ -8,6 +8,7 @@ use anyhow::{
 use crate::structures::{
     NiuxConfig,
     PackageType,
+    AutoGenNiuxConfig,
 };
 use crate::structures::niux_config::{
     ConfigMarkers,
@@ -52,8 +53,10 @@ pub fn run_bash(args: &[&str]) -> anyhow::Result<String> {
 pub fn run_early_bash(args: &[&str]) -> anyhow::Result<String> {
     bash(args, false)
 }
-pub fn writer_init(config_path: &str, hooks_path: &str) -> anyhow::Result<()> {
-    run_early_bash(&["sudo", "niux-writer", "init", config_path, hooks_path])?;
+pub fn writer_init(paths: AutoGenNiuxConfig) -> anyhow::Result<()> {
+    run_early_bash(&["sudo", "niux-writer", "init", 
+        paths.config_path.to_str().context("Invalid config path")?, 
+        paths.hooks_config_path.to_str().context("Invalid hook config path")?])?;
     Ok(())
 }
 pub fn writer_write(tmp_path: &str, dest_path: &str) -> anyhow::Result<()> {

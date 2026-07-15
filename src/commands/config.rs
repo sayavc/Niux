@@ -15,7 +15,7 @@ impl Action {
                 Ok(true)
             }
             Action::GenConfig => {
-                Package::gen_config(args)?;
+                Package::gen_config()?;
                 Ok(true)
             }
             Action::SetConfigPath => {

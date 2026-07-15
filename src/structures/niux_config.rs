@@ -59,7 +59,7 @@ pub struct Commands {
     pub update_flakes: String,
 }
 // auto generated config
-#[derive(knuffel::Decode)]
+#[derive(knuffel::Decode, Clone)]
 pub struct AutoGenNiuxConfig {
     #[knuffel(child, unwrap(argument))]
     pub config_path: PathBuf,

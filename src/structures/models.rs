@@ -66,3 +66,5 @@ pub enum Rebuild {
     Both, 
     None 
 }
+pub struct ConfigPath;
+pub struct HooksPath;
