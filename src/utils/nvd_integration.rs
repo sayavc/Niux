@@ -12,7 +12,11 @@ use crate::utils::{
 };
 impl Package {
     pub fn nvd(ptype: PackageType) -> anyhow::Result<()>  {
-        if !NiuxConfig::get()?.features.unwrap_or_default().nvd_integration { return Ok(()); }
+        if let Some(features) = &NiuxConfig::get().features {
+            if !features.nvd_integration {
+                return Ok(());
+            }
+        } else { return Ok(()) };
         if !command_exists("nvd") { bail!("Nvd is not installed"); }
         let state_dir = match dirs::state_dir() {
             Some(num) => num,

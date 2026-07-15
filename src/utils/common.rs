@@ -16,7 +16,7 @@ use crate::structures::niux_config::{
 };
 use crate::utils::get_privilege_type;
 pub fn run_bash_interactive(args: &[&str]) -> anyhow::Result<()> {
-    let first = if args[0] == "sudo" { NiuxConfig::get()?.environment.su_type }
+    let first = if args[0] == "sudo" { NiuxConfig::get().environment.su_type.clone() }
     else { args[0].to_string()};
     let status = process::Command::new(first)
         .args(&args[1..])
@@ -29,7 +29,7 @@ pub fn run_bash_interactive(args: &[&str]) -> anyhow::Result<()> {
 }
 fn bash(args: &[&str], type_bash: bool) -> anyhow::Result<String> {
     let first = if type_bash {
-        if args[0] == "sudo" { NiuxConfig::get()?.environment.su_type }
+        if args[0] == "sudo" { NiuxConfig::get().environment.su_type.clone() }
         else { args[0].to_string() }
     } else {
         if args[0] == "sudo" { get_privilege_type()? }
@@ -88,7 +88,7 @@ pub fn user_input() -> String {
 }
 #[allow(clippy::ptr_arg)]
 pub fn search_range(lines: &Vec<String>, ptype: &PackageType) -> anyhow::Result<Vec<String>> {
-    let config = NiuxConfig::get()?;
+    let config = NiuxConfig::get();
     let (marker_start, marker_end) = ptype.get_markers(&config.config_markers);
     let Some(marker_start) = lines.iter().position(|l| l.contains(marker_start)) else {
         bail!("Marker is not found: {marker_start}");

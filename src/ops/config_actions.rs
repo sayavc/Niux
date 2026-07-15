@@ -12,10 +12,8 @@ use crate::structures::{
 use colored::Colorize;
 impl Package {
     pub fn show_path() {
-        match AutoGenNiuxConfig::get().ok() {
-            Some(cfg) => println!("Config:{}\nHook config:{}", cfg.config_path.to_string_lossy().blue(), cfg.hooks_config_path.to_string_lossy().blue()),
-            None => println!("none"),
-        }
+        let cfg = AutoGenNiuxConfig::get();
+        println!("Config:{}\nHook config:{}", cfg.config_path.to_string_lossy().blue(), cfg.hooks_config_path.to_string_lossy().blue());
     }
     pub fn gen_config() -> anyhow::Result<()> {
         AutoGenNiuxConfig::init()?;

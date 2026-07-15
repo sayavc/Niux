@@ -1,5 +1,9 @@
 use std::fs;
-use anyhow::{ Context, bail};
+use anyhow::{ 
+    Context, 
+    bail
+};
+use std::sync::OnceLock;
 use colored::Colorize;
 use crate::structures::AutoGenNiuxConfig;
 use crate::utils::{get_privilege_type, user_input, writer_write};
@@ -7,7 +11,7 @@ use crate::structures::NiuxConfig;
 
 impl NiuxConfig {
     pub fn create() -> anyhow::Result<()>  {
-        let cfg = AutoGenNiuxConfig::get()?; 
+        let cfg = AutoGenNiuxConfig::get(); 
         if cfg.config_path.exists() { 
             println!("{}", "Niux config already exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
@@ -20,8 +24,18 @@ impl NiuxConfig {
         writer_write(tmp.path().to_str().context("Invalid tmp path")?, cfg.config_path.to_str().context("Invalid config path")?)?;  
         Ok(())
     }
-    pub fn get() -> anyhow::Result<NiuxConfig> {
-        let cfg = AutoGenNiuxConfig::get()?;
+    pub fn get() -> &'static Self {
+        static CONFIG: OnceLock<NiuxConfig> = OnceLock::new();
+        CONFIG.get_or_init(|| {
+            Self::load()
+                .unwrap_or_else(|e| {
+                    eprintln!("Failed to init niux config\n{e}");
+                    std::process::exit(1);
+                })
+        })
+    }
+    pub fn load() -> anyhow::Result<NiuxConfig> {
+        let cfg = AutoGenNiuxConfig::get();
         let content = fs::read_to_string(&cfg.config_path).map_err(|e| anyhow::anyhow!("{e:?}")).with_context(|| format!("Failed to read config: {}", cfg.config_path.display()))?;
         Ok(match knuffel::parse::<NiuxConfig>("config.kdl", &content) {
             Ok(parsed_config) => parsed_config,

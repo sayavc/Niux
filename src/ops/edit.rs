@@ -13,7 +13,7 @@ use crate::utils::{
 };
 impl Package {
     pub fn edit(&self) -> anyhow::Result<()> {
-        let config = NiuxConfig::get()?;
+        let config = NiuxConfig::get();
         let config_path = self.ptype.get_config_path(&config.config_paths);
         let state_dir = match dirs::state_dir() {
             Some(num) => num,

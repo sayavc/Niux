@@ -17,7 +17,7 @@ use std::fs;
 impl Package {
     pub fn remove(&self) -> anyhow::Result<()>  {
         log::info!("Remove is started, rebuild: {}, is_system: {}, package: {:?}", self.rebuild, match self.ptype { PackageType::System => "system", _ => "home"}, self.name);
-        let config = NiuxConfig::get()?;
+        let config = NiuxConfig::get();
         let config_path = self.ptype.get_config_path(&config.config_paths);
         if !std::path::Path::new(&config_path).exists() {
             error!("{}", "Config path is wrong");

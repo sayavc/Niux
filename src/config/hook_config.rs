@@ -1,11 +1,19 @@
-use anyhow::{ Context, bail };
+use anyhow::{ 
+    Context, 
+    bail 
+};
 use colored::Colorize;
 use std::fs;
-use crate::structures::{ hook_config::HookConfig, models::HookEvent, AutoGenNiuxConfig };
+use crate::structures::{
+    hook_config::HookConfig,
+    models::HookEvent,
+    AutoGenNiuxConfig
+};
+use std::sync::OnceLock;
 use crate::utils::{writer_write, run_bash_interactive, user_input };
 impl HookConfig {
     pub fn create() -> anyhow::Result<()> {
-        let cfg = AutoGenNiuxConfig::get()?;
+        let cfg = AutoGenNiuxConfig::get();
         if cfg.hooks_config_path.exists() {
             println!("{}", "Hooks config already exists, rewrite? y/n".blue());
             if user_input().trim() != "y" { return Ok(()); }
@@ -20,9 +28,9 @@ impl HookConfig {
         println!("Config created in {}", cfg.hooks_config_path.to_str().context("Invalid config path")?.green());
         Ok(())
     }
-    pub fn get() -> anyhow::Result<HookConfig> {
-        let hook_config_path = AutoGenNiuxConfig::get()?.hooks_config_path;
-        let content = fs::read_to_string(&hook_config_path).with_context(|| format!("Failed to read config: {})", hook_config_path.display()))?;
+    pub fn load() -> anyhow::Result<Self> {
+        let cfg = AutoGenNiuxConfig::get();
+        let content = fs::read_to_string(&cfg.hooks_config_path).with_context(|| format!("Failed to read config: {})", cfg.hooks_config_path.display()))?;
         Ok(match knuffel::parse::<HookConfig>("niux_hooks.kdl", &content) {
             Ok(parsed_config) => parsed_config,
             Err(e) => {
@@ -35,12 +43,22 @@ impl HookConfig {
             }
         })
     }
+    pub fn get() -> &'static Self {
+        static CONFIG: OnceLock<HookConfig> = OnceLock::new();
+        CONFIG.get_or_init(|| {
+            Self::load()
+                .unwrap_or_else(|e| {
+                    eprintln!("Failed to init hook config\n{e}");
+                    std::process::exit(1);
+                })
+        })
+    }
     pub fn run(event: HookEvent) -> anyhow::Result<()> {
-        let cfg = AutoGenNiuxConfig::get()?;
+        let cfg = AutoGenNiuxConfig::get();
         if !cfg.hooks_config_path.exists() {
             return Ok(());
         } 
-        let config = HookConfig::get()?;
+        let config = HookConfig::get();
         let action = match event {
             HookEvent::PreInstall => "pre-install", 
             HookEvent::PostInstall => "post-install",

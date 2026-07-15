@@ -1,3 +1,4 @@
+use colored::Colorize;
 use crate::{
     utils::writer_init,
     structures::{
@@ -8,24 +9,24 @@ use crate::{
         },
     },
 };
-use anyhow::{ Context };
+use anyhow::Context;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 pub trait ConfigPathKind {
-    fn transform(s: &AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig;
+    fn transform(s: AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig;
 }
 impl ConfigPathKind for ConfigPath {
-    fn transform(s: &AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
+    fn transform(s: AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
         AutoGenNiuxConfig {
             config_path: path,
-            hooks_config_path: s.hooks_config_path.to_path_buf(),
+            hooks_config_path: s.hooks_config_path,
         }
     }
 }
 impl ConfigPathKind for HooksPath {
-    fn transform(s: &AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
+    fn transform(s: AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
         AutoGenNiuxConfig {
-            config_path: s.config_path.to_path_buf(),
+            config_path: s.config_path,
             hooks_config_path: path,
         }
     }
@@ -39,16 +40,10 @@ impl Default for AutoGenNiuxConfig {
     }
 }
 impl AutoGenNiuxConfig {
-    fn get_cached() -> &'static Self {
-        static INSTANCE: OnceLock<AutoGenNiuxConfig> = OnceLock::new();
-        INSTANCE.get_or_init(|| {
-            Self::get().unwrap_or_else(|_| Self::default())
-        })
-    }
     pub fn create<T>(path: PathBuf) -> anyhow::Result<()>
         where 
             T: ConfigPathKind {
-                let s = T::transform(Self::get_cached(), path);
+                let s = T::transform(Self::load().unwrap_or_default(), path);
                 writer_init(s)?;
                 Ok(())
     }
@@ -56,8 +51,20 @@ impl AutoGenNiuxConfig {
         writer_init(Self::default())?;
         Ok(())
     }
-    pub fn get() -> anyhow::Result<Self> {
-        let content = std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl").with_context(|| "Failed to read config: /var/lib/niux/niux_autogen.kdl".to_string())?;
-        knuffel::parse::<Self>("niux_autogen.kdl", &content).with_context(|| "Failed to parse config: /var/lib/niux/niux_autogen.kdl".to_string())
+    pub fn load() -> anyhow::Result<AutoGenNiuxConfig> {
+        let content = std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl")
+            .with_context(|| "Failed to read config: /var/lib/niux/niux_autogen.kdl".red())?;
+        knuffel::parse::<Self>("niux_autogen.kdl", &content)
+            .with_context(|| "Failed to parse config: /var/lib/niux/niux_autogen.kdl".red())
+    }
+    pub fn get() -> &'static Self {
+        static CONFIG: OnceLock<AutoGenNiuxConfig> = OnceLock::new();
+        CONFIG.get_or_init(|| {
+            Self::load()
+                .unwrap_or_else(|e| {
+                    eprintln!("Failed to init autogen config\n{e}");
+                    std::process::exit(1);
+                })
+        })
     }
 }
