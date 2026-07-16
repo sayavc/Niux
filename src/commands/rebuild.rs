@@ -1,14 +1,9 @@
-use crate::structures::{
-    Package,
-    models::{
-        Rebuild,
-    }
-};
+use crate::structures::models::{Package, Rebuild};
 impl Rebuild {
-    pub fn rebuild_wrapper(&self, package: &Package ) -> anyhow::Result<()> {
+    pub fn rebuild_wrapper(&self, package: &Package) -> anyhow::Result<()> {
         match self {
-            Rebuild::Both => { 
-                package.rebuild_home()?; 
+            Rebuild::Both => {
+                package.rebuild_home()?;
                 package.rebuild_system()?;
                 Ok(())
             }
@@ -20,9 +15,7 @@ impl Rebuild {
                 package.rebuild_system()?;
                 Ok(())
             }
-            Rebuild::None => {
-                Ok(())
-            }
+            Rebuild::None => Ok(()),
         }
     }
 }

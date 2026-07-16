@@ -1,56 +1,117 @@
-use crate::structures::{ 
-    Package,
-    PackageType,
-    NiuxConfig 
-};
-use crate::utils::{
-    search_range,
-    GetCfgData,
-};
+use crate::structures::NiuxConfig;
+use crate::structures::models::{Home, Package, System, Target};
+use colored::{Colorize, CustomColor};
 use std::fs;
-use colored::Colorize;
+use std::iter::Peekable;
 impl Package {
     pub fn list_all() -> anyhow::Result<()> {
         let config = NiuxConfig::get();
-        let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
         let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
-        let lines_cut_home = search_range(&content_home.lines().map(String::from).collect(), &PackageType::Home)?;
-        let lines_cut_system = search_range(&content_system.lines().map(String::from).collect(), &PackageType::System)?;
-        let mut all_lines: Vec<&String> = lines_cut_home.iter().chain(lines_cut_system.iter()).collect();
-            all_lines.sort_by(|a, b| a.trim().cmp(b.trim()));
-            for line in &all_lines {
-                println!("{}", line.trim());
-            }
-            Ok(())
+        let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
+        let mut packages_system = config.get_range::<System>(&content_system)?;
+        let mut packages_home = config.get_range::<Home>(&content_home)?;
+        packages_system.sort();
+        packages_home.sort();
+        if !Self::print_packages("system", packages_system.iter().peekable(), true)
+            & !Self::print_packages("home", packages_home.iter().peekable(), false)
+        {
+            println!("{}", "Packages list is none".yellow());
+        }
+        Ok(())
     }
     pub fn list_type(&self) -> anyhow::Result<()> {
         let config = NiuxConfig::get();
-        let config_path = self.ptype.get_config_path(&config.config_paths);
+        let config_path = match self.ptype {
+            Target::Home => &config.config_paths.config_path_home,
+            Target::System => &config.config_paths.config_path_system,
+            _ => unreachable!(),
+        };
         let content = fs::read_to_string(config_path)?;
-        let mut lines = search_range(&content.lines().map(String::from).collect(), &self.ptype)?;
-        lines.sort();
-        for line in &lines {
-            println!("{}", line.trim());
+        let (mut range, ptype) = match self.ptype {
+            Target::Home => (config.get_range::<Home>(&content)?, "home"),
+            Target::System => (config.get_range::<System>(&content)?, "system"),
+            _ => unreachable!(),
+        };
+
+        range.sort();
+        if !Self::print_packages(ptype, range.iter().peekable(), false) {
+            println!("{}", "Packages list is none".yellow())
         }
         Ok(())
     }
 
-pub fn list_do_package(&self) -> anyhow::Result<()> {
-    let config = NiuxConfig::get();
-    let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
-    let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
-    let lines_cut_home = search_range(&content_home.lines().map(String::from).collect(), &PackageType::Home)?;
-    let lines_cut_system = search_range(&content_system.lines().map(String::from).collect(), &PackageType::System)?;
-    for name in &self.name {
-        let found_home = lines_cut_home.iter().any(|l| l.trim() == name.as_str());
-        let found_system = lines_cut_system.iter().any(|l| l.trim() == name.as_str());
-        match (found_home, found_system) {
-            (true, false) => println!("{}: home", name.blue()),
-            (false, true) => println!("{}: system", name.blue()),
-            (true, true) => println!("{}: home & system", name.blue()),
-            (false, false) => println!("{}: not found", name.blue()),
+    fn print_packages<'a>(
+        ptype: &str,
+        mut packages: Peekable<impl Iterator<Item = &'a String>>,
+        whitespace: bool,
+    ) -> bool {
+        if packages.peek().is_some() {
+            println!(" {}:", ptype.cyan().bold());
+            for p in packages {
+                println!(
+                    " {} {}",
+                    "-".blue(),
+                    p.trim().custom_color(CustomColor {
+                        r: 240,
+                        g: 246,
+                        b: 252,
+                    })
+                );
+            }
+            if whitespace {
+                println!();
+            }
+            true
+        } else {
+            false
         }
-    } 
-    Ok(())
-}
+    }
+    pub fn list_do_package(&self) -> anyhow::Result<()> {
+        let config = NiuxConfig::get();
+        let result = match self.ptype {
+            Target::Home => {
+                let content = fs::read_to_string(&config.config_paths.config_path_home)?;
+                let packages = config.get_range::<Home>(&content)?;
+                let found = packages
+                    .iter()
+                    .filter(|p| self.name.iter().any(|n| p.contains(&**n)));
+                Self::print_packages("home", found.peekable(), false)
+            }
+            Target::System => {
+                let content = fs::read_to_string(&config.config_paths.config_path_system)?;
+                let packages = config.get_range::<System>(&content)?;
+                let found = packages
+                    .iter()
+                    .filter(|p| self.name.iter().any(|n| p.contains(&**n)));
+                Self::print_packages("system", found.peekable(), false)
+            }
+            Target::None => {
+                let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
+                let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
+                let packages_system = config.get_range::<System>(&content_system)?;
+                let packages_home = config.get_range::<Home>(&content_home)?;
+                let found_system = packages_system
+                    .iter()
+                    .filter(|p| self.name.iter().any(|n| p.contains(&**n)));
+                let found_home = packages_home
+                    .iter()
+                    .filter(|p| self.name.iter().any(|n| p.contains(&**n)));
+                match (
+                    Self::print_packages("system", found_system.peekable(), true),
+                    Self::print_packages("home", found_home.peekable(), false),
+                ) {
+                    (false, false) => false,
+                    (true, _) | (_, true) => true,
+                }
+            }
+            _ => unreachable!(),
+        };
+        if !result {
+            println!("not found:");
+            for n in &self.name {
+                println!("- {}", n.blue());
+            }
+        }
+        Ok(())
+    }
 }

@@ -1,7 +1,7 @@
-pub mod install;
-pub mod remove;
+pub mod config_actions;
 pub mod edit;
+pub mod install;
 pub mod list;
 pub mod nixos;
+pub mod remove;
 pub mod search;
-pub mod config_actions;

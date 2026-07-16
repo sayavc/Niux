@@ -1,12 +1,5 @@
-use crate::{
-    structures::{
-        Package,
-        Args,
-        models::{
-            Action,
-        },
-    },
-};
+use crate::structures::models::Package;
+use crate::structures::{Args, models::Action};
 impl Action {
     pub fn dispatch_config(&self, args: &Args) -> anyhow::Result<bool> {
         match self {

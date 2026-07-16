@@ -1,11 +1,7 @@
 pub struct Package {
     pub name: Vec<String>,
-    pub ptype: PackageType,
+    pub ptype: Target,
     pub rebuild: bool,
-}
-pub enum PackageType {
-    Home,
-    System,
 }
 pub enum HookEvent {
     PreInstall,
@@ -31,11 +27,12 @@ pub struct Commands {
     pub update_flakes: String,
     pub editor: String,
 }
-pub enum Target { 
+#[derive(Debug)]
+pub enum Target {
     System,
     Home,
     Both,
-    None
+    None,
 }
 pub enum Action {
     Install,
@@ -49,22 +46,28 @@ pub enum Action {
     GenConfig,
     SetConfigPath,
     SetHookConfigPath,
-    None
+    None,
 }
 pub enum List {
     Package,
     Type,
-    All 
+    All,
 }
 pub enum Update {
     Just,
-    Flakes 
+    Flakes,
 }
-pub enum Rebuild { 
-    Home, 
-    System, 
-    Both, 
-    None 
+pub enum Rebuild {
+    Home,
+    System,
+    Both,
+    None,
 }
 pub struct ConfigPath;
 pub struct HooksPath;
+
+pub struct Home;
+pub struct System;
+
+pub struct Just;
+pub struct Early;

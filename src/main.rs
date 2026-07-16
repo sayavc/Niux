@@ -1,18 +1,12 @@
-mod config;
 mod commands;
-mod utils;
+mod config;
 mod ops;
 mod structures;
+mod utils;
 use clap::Parser;
 use commands::validate;
-use structures::{
-    Args,
-    Package,
-    models::{
-        PackageType,
-        Target,
-    }
-};
+use structures::Args;
+use structures::models::Package;
 fn main() {
     pretty_env_logger::init();
     if let Err(e) = run() {
@@ -26,10 +20,7 @@ fn run() -> anyhow::Result<()> {
     let action = args.action();
     let package = Package {
         name: args.package.clone().unwrap_or_default(),
-        ptype: match target {
-            Target::System => PackageType::System,
-            _ => PackageType::Home,
-        },
+        ptype: target,
         rebuild: args.apply,
     };
     validate(&args)?;

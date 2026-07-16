@@ -1,11 +1,6 @@
 use crate::structures::{
     Args,
-    models::{
-        Action,
-        List,
-        Update,
-        Rebuild,
-    },
+    models::{Action, List, Rebuild, Update},
 };
 
 impl Args {

@@ -1,13 +1,4 @@
-use crate::{
-    structures::{
-        Package,
-        models::{
-            Action,
-            List,
-            Update,
-        },
-    },
-};
+use crate::structures::models::{Action, List, Package, Update};
 impl Action {
     pub fn dispatch(&self, package: &Package) -> anyhow::Result<()> {
         match self {

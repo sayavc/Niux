@@ -1,15 +1,13 @@
-use colored::Colorize;
 use crate::{
-    utils::writer_init,
+    error,
     structures::{
         AutoGenNiuxConfig,
-        models::{
-            ConfigPath,
-            HooksPath,
-        },
+        models::{ConfigPath, HooksPath},
     },
+    utils::writer_init,
 };
 use anyhow::Context;
+use colored::Colorize;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 pub trait ConfigPathKind {
@@ -41,11 +39,12 @@ impl Default for AutoGenNiuxConfig {
 }
 impl AutoGenNiuxConfig {
     pub fn create<T>(path: PathBuf) -> anyhow::Result<()>
-        where 
-            T: ConfigPathKind {
-                let s = T::transform(Self::load().unwrap_or_default(), path);
-                writer_init(s)?;
-                Ok(())
+    where
+        T: ConfigPathKind,
+    {
+        let s = T::transform(Self::load().unwrap_or_default(), path);
+        writer_init(s)?;
+        Ok(())
     }
     pub fn init() -> anyhow::Result<()> {
         writer_init(Self::default())?;
@@ -60,11 +59,10 @@ impl AutoGenNiuxConfig {
     pub fn get() -> &'static Self {
         static CONFIG: OnceLock<AutoGenNiuxConfig> = OnceLock::new();
         CONFIG.get_or_init(|| {
-            Self::load()
-                .unwrap_or_else(|e| {
-                    eprintln!("Failed to init autogen config\n{e}");
-                    std::process::exit(1);
-                })
+            Self::load().unwrap_or_else(|e| {
+                error!("Failed to init autogen config, try --gen-config\n{e}");
+                std::process::exit(1);
+            })
         })
     }
 }

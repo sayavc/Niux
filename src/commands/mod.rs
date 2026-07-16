@@ -1,8 +1,8 @@
 mod action;
-mod target;
-mod dispatch;
-mod validate;
-mod rebuild;
-mod hooks;
 mod config;
+mod dispatch;
+mod hooks;
+mod rebuild;
+mod target;
+mod validate;
 pub use validate::*;

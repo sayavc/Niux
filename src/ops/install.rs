@@ -1,30 +1,35 @@
-use colored::Colorize;
-use anyhow::{ 
-    Context, 
-    bail 
-};
-use std::fs;
 use crate::error;
-use crate::utils::{
-    write_changes_to_config,
-    GetCfgData,
-};
-use crate::structures::{ 
-    Package,
-    PackageType,
-    NiuxConfig 
-};
+use crate::structures::NiuxConfig;
+use crate::structures::models::{Package, Target};
+use crate::utils::write_changes_to_config;
+use anyhow::{Context, bail};
+use colored::Colorize;
+use std::fs;
 impl Package {
     pub fn install(&self) -> anyhow::Result<()> {
-        log::info!("Install is started, rebuild: {}, ptype: {}, package: {:?}", self.rebuild, match self.ptype { PackageType::System => "System", _ => "Home"}, self.name);
+        log::info!(
+            "Install is started, rebuild: {}, ptype: {:?}, package: {:?}",
+            self.rebuild,
+            self.ptype,
+            self.name
+        );
         let config = NiuxConfig::get();
-        let config_path = self.ptype.get_config_path(&config.config_paths);
+        let config_path = match self.ptype {
+            Target::Home => &config.config_paths.config_path_home,
+            Target::System => &config.config_paths.config_path_system,
+            _ => unreachable!(),
+        };
         if !std::path::Path::new(&config_path).exists() {
             error!("Config path is wrong");
-            return Ok(())
+            return Ok(());
         }
-        let config_marker = self.ptype.get_marker_start(&config.config_markers);
-        let content = fs::read_to_string(config_path).with_context(|| format!("Failed to read config: {config_path}"))?;
+        let config_marker = match self.ptype {
+            Target::Home => &config.config_markers.marker_home,
+            Target::System => &config.config_markers.marker_system,
+            _ => unreachable!(),
+        };
+        let content = fs::read_to_string(config_path)
+            .with_context(|| format!("Failed to read config: {}", config_path.display()))?;
         let mut lines: Vec<String> = content.lines().map(String::from).collect();
         for i in 0..lines.len() {
             if lines[i].contains(config_marker) {
@@ -43,8 +48,8 @@ impl Package {
             println!("{}", "Nothing has changed...".yellow());
             return Ok(());
         }
-        write_changes_to_config(&new_content, config_path)?;
-        println!("{}", "Package added to config".green());
+        write_changes_to_config(&new_content, config_path.to_path_buf())?;
+        println!("{}", "Packages removed".green());
         Ok(())
     }
 }

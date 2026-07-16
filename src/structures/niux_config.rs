@@ -18,15 +18,14 @@ pub struct NiuxConfig {
 #[derive(knuffel::Decode)]
 pub struct ConfigPaths {
     #[knuffel(child, unwrap(argument))]
-    pub config_path_home: String,
+    pub config_path_home: PathBuf,
     #[knuffel(child, unwrap(argument))]
-    pub config_path_system: String,
+    pub config_path_system: PathBuf,
     #[knuffel(child, unwrap(argument))]
-    pub path_nix_flake: String,
+    pub path_nix_flake: PathBuf,
 }
 
-#[derive(knuffel::Decode)]
-#[derive(Clone)]
+#[derive(knuffel::Decode, Clone)]
 pub struct ConfigMarkers {
     #[knuffel(child, unwrap(argument))]
     pub marker_home: String,

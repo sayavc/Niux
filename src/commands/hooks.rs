@@ -1,10 +1,5 @@
-use crate::structures::{
-    HookEvent,
-    hook_config::HookConfig,
-    models::{
-        Action,
-    },
-};
+use crate::structures::models::HookEvent;
+use crate::structures::{hook_config::HookConfig, models::Action};
 impl Action {
     pub fn pre_hooks(&self) -> anyhow::Result<()> {
         match self {
