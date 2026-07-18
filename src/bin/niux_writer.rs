@@ -75,6 +75,10 @@ fn writer(tmp_path: &str, dest_path: &str) -> anyhow::Result<()> {
         }
     }
     let tmp_content = fs::read_to_string(tmp_path)?;
+    let old_perms = fs::metadata(dest_path).ok().map(|m| m.permissions());
     fs::write(dest_path, tmp_content)?;
+    if let Some(perms) = old_perms {
+        fs::set_permissions(dest_path, perms)?;
+    }
     Ok(())
 }
