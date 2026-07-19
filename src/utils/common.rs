@@ -7,6 +7,7 @@ use std::borrow::Cow;
 use std::path::PathBuf;
 use std::process;
 use tempfile::NamedTempFile;
+use git_version::git_version;
 pub trait BashType {
     fn otype(first: &str) -> Cow<'_, str>;
 }
@@ -173,4 +174,23 @@ pub fn get_privilege_type() -> String {
     }
     println!("Privilege escalation tool not found. Enter yours (e.g. sudo, doas)");
     user_input().trim().to_string()
+}
+
+pub fn version() -> String {
+    if let Some(v) = option_env!("NIUX_BUILD_VERSION_STRING") {
+        return String::from(v);
+    }
+
+    const MAJOR: &str = env!("CARGO_PKG_VERSION_MAJOR");
+    const MINOR: &str = env!("CARGO_PKG_VERSION_MINOR");
+    const PATCH: &str = env!("CARGO_PKG_VERSION_PATCH");
+
+    let commit =
+        option_env!("NIUX_BUILD_COMMIT").unwrap_or(git_version!(fallback = "unknown commit"));
+
+    if PATCH == "0" {
+        format!("{MAJOR}.{MINOR:0>2} ({commit})")
+    } else {
+        format!("{MAJOR}.{MINOR:0>2}.{PATCH} ({commit})")
+    }
 }

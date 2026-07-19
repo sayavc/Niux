@@ -29,6 +29,10 @@
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
 
+          env = {
+              NIUX_BUILD_COMMIT = if (self ? rev) then builtins.substring 0 7 self.rev else "dirty";
+          };
+
           meta = {
             description = "Declarative NixOS package manager";
             homepage = "https://github.com/sayavc/niux";
