@@ -2,19 +2,19 @@
 
 _niux_packages() {
     local packages
-    packages=(${(f)"$(niux -l)"})
+    packages=(${(f)"$(niux -l --raw)"})
     compadd -a packages
 }
 
 _niux_packages_home() {
     local packages
-    packages=(${(f)"$(niux -Hl)"})
+    packages=(${(f)"$(niux -Hl --raw)"})
     compadd -a packages
 }
 
 _niux_packages_system() {
     local packages
-    packages=(${(f)"$(niux -Sl)"})
+    packages=(${(f)"$(niux -Sl --raw)"})
     compadd -a packages
 }
 
@@ -39,7 +39,6 @@ _niux() {
             _niux_search
             ;;
         *)
-            # Фоллбэк для остальных флагов/аргументов
             _arguments -s -w \
                 '(-l -Hl -Sl -Hi -Si)'{-h,--help}'[Show help]' \
                 '(-V,--version)'{-V,--version}'[Print version]'
