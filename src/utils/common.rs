@@ -3,11 +3,11 @@ use crate::structures::models::{Early, Home, Just, System};
 use crate::structures::niux_config::ConfigMarkers;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig};
 use anyhow::{Context, bail};
+use git_version::git_version;
 use std::borrow::Cow;
 use std::path::PathBuf;
 use std::process;
 use tempfile::NamedTempFile;
-use git_version::git_version;
 pub trait BashType {
     fn otype(first: &str) -> Cow<'_, str>;
 }

@@ -2,6 +2,7 @@ pub struct Package {
     pub name: Vec<String>,
     pub ptype: Target,
     pub rebuild: bool,
+    pub raw_mode: bool,
 }
 pub enum HookEvent {
     PreInstall,

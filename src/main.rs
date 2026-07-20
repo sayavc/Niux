@@ -22,6 +22,7 @@ fn run() -> anyhow::Result<()> {
         name: args.package.clone().unwrap_or_default(),
         ptype: target,
         rebuild: args.apply,
+        raw_mode: args.raw,
     };
     validate(&args)?;
     if action.dispatch_config(&args)? {

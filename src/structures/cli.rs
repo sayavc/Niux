@@ -1,5 +1,5 @@
-use clap::{ArgGroup, Parser};
 use crate::utils::common::version;
+use clap::{ArgGroup, Parser};
 #[derive(Parser)]
 #[command(
     name = "niux",
@@ -27,6 +27,9 @@ pub struct Args {
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],
         help = "Displays current path")]
     pub show_path: bool,
+    #[arg(long, conflicts_with_all = ["install", "remove", "update", "apply", "package"],
+        help = "Raw mode")]
+    pub raw: bool,
     #[arg(long, help = "search packages with nix-search")]
     pub search: bool,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],

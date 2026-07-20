@@ -9,7 +9,7 @@ impl Action {
             Action::Search => package.search(),
             Action::Update(Update::Just) => Package::update(),
             Action::Update(Update::Flakes) => package.update_flake(),
-            Action::List(List::All) => Package::list_all(),
+            Action::List(List::All) => package.list_all(),
             Action::List(List::Type) => package.list_type(),
             Action::List(List::Package) => package.list_do_package(),
             _ => Ok(()),
