@@ -49,7 +49,7 @@ impl Package {
             return Ok(());
         }
         write_changes_to_config(&new_content, config_path.to_path_buf())?;
-        println!("{}", "Packages removed".green());
+        println!("{}", "Packages installed".green());
         Ok(())
     }
 }
