@@ -12,6 +12,9 @@ impl Action {
             Action::List(List::All) => package.list_all(),
             Action::List(List::Type) => package.list_type(),
             Action::List(List::Package) => package.list_do_package(),
+            Action::Deps(List::All) => Package::deps_list_all(),
+            Action::Deps(List::Type) => package.deps_list_type(),
+            Action::Deps(List::Package) => package.deps_list_do_package(),
             _ => Ok(()),
         }
     }

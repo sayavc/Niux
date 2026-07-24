@@ -41,6 +41,7 @@ pub enum Action {
     Edit,
     Search,
     List(List),
+    Deps(List),
     Clear,
     Update(Update),
     ShowPath,

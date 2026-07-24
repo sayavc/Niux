@@ -1,4 +1,5 @@
 pub mod config_actions;
+pub mod deps;
 pub mod edit;
 pub mod install;
 pub mod list;

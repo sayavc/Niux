@@ -35,10 +35,10 @@ pub struct Args {
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],
         help = "This is nix-collect-garbage")]
     pub clear: bool,
-    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "config", "hook_config", "update", "list", "clear", "search", "show_path"],
+    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "config", "hook_config", "update", "list", "deps", "clear", "search", "show_path"],
         help = "Manage home packages")]
     pub home: bool,
-    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "config", "hook_config", "update", "list", "clear", "search", "show_path"],
+    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "config", "hook_config", "update", "list", "deps", "clear", "search", "show_path"],
         help = "Manage system packages")]
     pub system: bool,
     #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search", "edit"], 
@@ -64,6 +64,9 @@ pub struct Args {
     #[arg(short = 'l', conflicts_with_all = ["install", "remove", "update", "apply"], 
         help = "List packages")]
     pub list: bool,
+    #[arg(short = 'd', conflicts_with_all = ["list", "install", "remove", "update", "apply"],
+        help = "List packages dependencies")]
+    pub deps: bool,
     #[arg[hide = true]]
     pub package: Option<Vec<String>>,
 }

@@ -1,0 +1,127 @@
+use crate::error;
+use crate::structures::NiuxConfig;
+use crate::structures::models::{Home, Just, Package, System, Target};
+use crate::utils::{Color, SanitizePackages, SortExt, bash, print_packages};
+use anyhow::Context;
+use serde_json::Value;
+use std::fs;
+
+impl Package {
+    pub fn deps_list_all() -> anyhow::Result<()> {
+        let config = NiuxConfig::get();
+        let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
+        let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
+        let packages_system = config.get_range::<System>(&content_system)?;
+        let packages_home = config.get_range::<Home>(&content_home)?;
+
+        let deps_system = Self::transform(packages_system)?.sorted();
+        let deps_home = Self::transform(packages_home)?.sorted();
+
+        for (pkg, deps) in deps_system {
+            println!("{}", "system".cold_white());
+            if !print_packages(&pkg, deps.sorted().iter().peekable(), true) {
+                error!("system packages dependencies not found");
+            }
+        }
+        for (pkg, deps) in deps_home {
+            println!("{}", "home".cold_white());
+            if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
+                error!("home packages dependencies not found")
+            }
+        }
+        Ok(())
+    }
+
+    pub fn deps_list_type(&self) -> anyhow::Result<()> {
+        log::info!("Deps list_type is started, ptype: {:?}", self.ptype);
+        let config = NiuxConfig::get();
+        let path = match self.ptype {
+            Target::Home => &config.config_paths.config_path_home,
+            Target::System => &config.config_paths.config_path_system,
+            _ => unreachable!(),
+        };
+        let content = fs::read_to_string(path)?;
+        let (packages, ptype) = match self.ptype {
+            Target::Home => (config.get_range::<Home>(&content)?, "home"),
+            Target::System => (config.get_range::<System>(&content)?, "system"),
+            _ => unreachable!(),
+        };
+
+        let ndeps = Self::transform(packages)?.sorted();
+
+        for (pkg, deps) in ndeps {
+            println!("{}", ptype.cold_white());
+            if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
+                error!("{} packages dependencies not found", ptype)
+            }
+        }
+        Ok(())
+    }
+
+    pub fn deps_list_do_package(&self) -> anyhow::Result<()> {
+        log::info!("Deps list_do_package is started, ptype: {:?}", self.ptype);
+        let deps = Self::transform(self.name.clone())?.sorted();
+
+        for (pkg, deps) in deps {
+            if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
+                error!("system packages dependencies not found")
+            }
+        }
+        Ok(())
+    }
+
+    fn normalize_installable(packages: Vec<String>) -> Vec<String> {
+        packages
+            .into_iter()
+            .map(|p| {
+                if p.contains('#') {
+                    p
+                } else {
+                    format!("nixpkgs#{p}")
+                }
+            })
+            .collect::<Vec<String>>()
+    }
+
+    fn transform(packages: Vec<String>) -> anyhow::Result<Vec<(String, Vec<String>)>> {
+        log::info!("Deps transform is started, packages: {:?}", packages);
+
+        let packages = Self::normalize_installable(packages).sanitize_packages();
+        let mut command = vec!["nix", "derivation", "show"];
+
+        command.extend(packages.iter().map(String::as_str));
+        command.push("--impure");
+
+        log::info!("Command: {:?}", command);
+
+        let output = bash::<Just>(&command)?;
+        let json = serde_json::from_str::<Value>(&output)?;
+        let drv_values = json["derivations"]
+            .as_object()
+            .context("Failed to parse nix derivation json")?
+            .values();
+
+        let mut drv_map: Vec<(String, &Value)> = Vec::new();
+        for d in drv_values {
+            drv_map.push((
+                d["name"]
+                    .as_str()
+                    .context("Failed to parse package name")?
+                    .to_string(),
+                d,
+            ));
+        }
+
+        let result: Vec<(String, Vec<String>)> = drv_map
+            .into_iter()
+            .filter_map(|(name, drv)| {
+                let names = drv["inputs"]["drvs"].as_object()?.keys();
+                let deps: Vec<String> = names
+                    .filter_map(|n| Some(n.split_once("-")?.1.rsplit_once(".drv")?.0.to_string()))
+                    .collect();
+                Some((name, deps))
+            })
+            .collect();
+        Ok(result)
+    }
+}

@@ -3,8 +3,10 @@ use crate::structures::models::{Early, Home, Just, System};
 use crate::structures::niux_config::ConfigMarkers;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig};
 use anyhow::{Context, bail};
+use colored::{Colorize, CustomColor};
 use git_version::git_version;
 use std::borrow::Cow;
+use std::iter::Peekable;
 use std::path::PathBuf;
 use std::process;
 use tempfile::NamedTempFile;
@@ -61,7 +63,11 @@ where
         .output()
         .context("Failed to run bash command")?;
     if !result.status.success() {
-        error!("{}", String::from_utf8_lossy(&result.stderr));
+        error!(
+            "Failed to execute command: {}\n {}",
+            args.join(" "),
+            String::from_utf8_lossy(&result.stderr)
+        );
         process::exit(1);
     }
     Ok(String::from_utf8(result.stdout)
@@ -192,5 +198,59 @@ pub fn version() -> String {
         format!("{MAJOR}.{MINOR:0>2} ({commit})")
     } else {
         format!("{MAJOR}.{MINOR:0>2}.{PATCH} ({commit})")
+    }
+}
+pub trait Color {
+    fn cold_white(self) -> colored::ColoredString;
+}
+impl Color for &str {
+    fn cold_white(self) -> colored::ColoredString {
+        self.custom_color(CustomColor {
+            r: 240,
+            g: 246,
+            b: 252,
+        })
+    }
+}
+pub fn print_packages<'a>(
+    ptype: &str,
+    mut packages: Peekable<impl Iterator<Item = &'a String>>,
+    whitespace: bool,
+) -> bool {
+    if packages.peek().is_some() {
+        println!(" {}:", ptype.cyan().bold());
+        for p in packages {
+            println!(" {} {}", "-".blue(), p.trim().cold_white());
+        }
+        if whitespace {
+            println!();
+        }
+        true
+    } else {
+        false
+    }
+}
+pub fn print_raw_packages(packages: &Vec<String>) {
+    for p in packages {
+        println!("{}", p.trim())
+    }
+}
+pub trait SortExt {
+    fn sorted(self) -> Self;
+}
+impl<T: Ord> SortExt for Vec<T> {
+    fn sorted(mut self) -> Self {
+        self.sort();
+        self
+    }
+}
+pub trait SanitizePackages {
+    fn sanitize_packages(self) -> Self;
+}
+impl SanitizePackages for Vec<String> {
+    fn sanitize_packages(self) -> Self {
+        self.into_iter()
+            .filter(|p| !p.contains(['(', ')', '[', ']', '$', '{', '}', ',']))
+            .collect()
     }
 }
