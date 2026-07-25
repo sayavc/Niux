@@ -25,7 +25,8 @@ pub enum HookEvent {
 pub struct Commands {
     pub rebuild_system: String,
     pub rebuild_home: String,
-    pub update_flakes: String,
+    pub update_flake: String,
+    pub update_inputs: String,
     pub editor: String,
 }
 #[derive(Debug)]

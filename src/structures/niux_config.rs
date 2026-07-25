@@ -21,8 +21,6 @@ pub struct ConfigPaths {
     pub config_path_home: PathBuf,
     #[knuffel(child, unwrap(argument))]
     pub config_path_system: PathBuf,
-    #[knuffel(child, unwrap(argument))]
-    pub path_nix_flake: PathBuf,
 }
 
 #[derive(knuffel::Decode, Clone)]
@@ -55,7 +53,9 @@ pub struct Commands {
     #[knuffel(child, unwrap(argument))]
     pub rebuild_system: String,
     #[knuffel(child, unwrap(argument))]
-    pub update_flakes: String,
+    pub update_flake: String,
+    #[knuffel(child, unwrap(argument))]
+    pub update_inputs: String,
 }
 // auto generated config
 #[derive(knuffel::Decode, Clone)]

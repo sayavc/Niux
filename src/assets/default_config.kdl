@@ -1,7 +1,6 @@
 config-paths {{
     config-path-home "/etc/nixos/home/home.nix"
     config-path-system "/etc/nixos/modules/packages.nix"
-    path-nix-flake "/etc/nixos" // Hostname does not need to be specified
 }}
 config-markers {{
     marker-home "home.packages = with pkgs; ["
@@ -19,5 +18,6 @@ environment {{
 commands {{
     rebuild-home "{}"
     rebuild-system "{}"
-    update-flakes "{}"
+    update-flake "{}"
+    update-inputs "{}"
 }}

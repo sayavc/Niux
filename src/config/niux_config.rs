@@ -23,7 +23,8 @@ impl NiuxConfig {
             commands.editor,
             commands.rebuild_home,
             commands.rebuild_system,
-            commands.update_flakes
+            commands.update_flake,
+            commands.update_inputs
         );
         let tmp = tempfile::NamedTempFile::new()
             .with_context(|| "Failed to create tmp file".to_string())?;

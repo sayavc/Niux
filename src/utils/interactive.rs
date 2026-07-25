@@ -32,7 +32,8 @@ impl NiuxConfig {
         Ok(Commands {
             rebuild_system: Self::rebuild_system_command(flakes)?,
             rebuild_home: Self::rebuild_home_command(flakes, home_manager)?,
-            update_flakes: Self::update_flakes_command(flakes),
+            update_flake: Self::update_flake_command(flakes),
+            update_inputs: Self::update_inputs_command(flakes),
             editor,
         })
     }
@@ -59,11 +60,18 @@ impl NiuxConfig {
         }
         Ok(args.join(" "))
     }
-    pub fn update_flakes_command(flakes: bool) -> String {
+    pub fn update_flake_command(flakes: bool) -> String {
         if flakes {
             "sudo nix flake update --flake /etc/nixos".to_string()
         } else {
             "nix-channel update".to_string()
+        }
+    }
+    pub fn update_inputs_command(flakes: bool) -> String {
+        if flakes {
+            "sudo nix flake update [packages] --flake /etc/nixos".to_string()
+        } else {
+            "nix-channel update [packages]".to_string()
         }
     }
 }

@@ -3,7 +3,6 @@ use crate::{
     structures::{NiuxConfig, hook_config::HookConfig},
     utils::run_bash_interactive,
 };
-use anyhow::Context;
 use shell_words;
 impl Package {
     pub fn rebuild_home(&self) -> anyhow::Result<()> {
@@ -23,24 +22,23 @@ impl Package {
         Ok(())
     }
     pub fn update() -> anyhow::Result<()> {
-        let args = shell_words::split(&NiuxConfig::get().commands.update_flakes)?;
+        let args = shell_words::split(&NiuxConfig::get().commands.update_flake)?;
         run_bash_interactive::<Just>(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
         Ok(())
     }
     pub fn update_flake(&self) -> anyhow::Result<()> {
-        run_bash_interactive::<Just>(&[
-            "sudo",
-            "nix",
-            "flake",
-            "update",
-            &self.name[0],
-            "--flake",
-            NiuxConfig::get()
-                .config_paths
-                .path_nix_flake
-                .to_str()
-                .with_context(|| "Invalid nix flake path")?,
-        ])?;
+        let args = shell_words::split(&NiuxConfig::get().commands.update_inputs)?;
+        let result: Vec<&str> = args
+            .iter()
+            .flat_map(|w| {
+                if w == "[packages]" {
+                    self.name.iter().map(String::as_str).collect::<Vec<_>>()
+                } else {
+                    vec![w.as_str()]
+                }
+            })
+            .collect();
+        run_bash_interactive::<Just>(&result)?;
         Ok(())
     }
     pub fn clear() -> anyhow::Result<()> {
