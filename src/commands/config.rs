@@ -19,6 +19,10 @@ impl Action {
                 Package::set_hook_config_path(args)?;
                 Ok(true)
             }
+            Action::Migrate => {
+                Package::migrate()?;
+                Ok(true)
+            }
             _ => Ok(false),
         }
     }

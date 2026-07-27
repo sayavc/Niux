@@ -5,11 +5,13 @@ use crate::structures::{AutoGenNiuxConfig, NiuxConfig};
 use anyhow::{Context, bail};
 use colored::{Colorize, CustomColor};
 use git_version::git_version;
+use kdl::KdlDocument;
 use std::borrow::Cow;
 use std::iter::Peekable;
 use std::path::PathBuf;
 use std::process;
 use tempfile::NamedTempFile;
+
 pub trait BashType {
     fn otype(first: &str) -> Cow<'_, str>;
 }
@@ -252,5 +254,32 @@ impl SanitizePackages for Vec<String> {
         self.into_iter()
             .filter(|p| !p.contains(['(', ')', '[', ']', '$', '{', '}', ',']))
             .collect()
+    }
+}
+pub trait NiuxKdlExt {
+    fn get_version(&self) -> anyhow::Result<u32>;
+}
+impl NiuxKdlExt for KdlDocument {
+    fn get_version(&self) -> anyhow::Result<u32> {
+        let node = match self.get("version") {
+            Some(n) => n,
+            None => return Ok(0),
+        };
+        let version = node
+            .entries()
+            .first()
+            .with_context(|| {
+                format!(
+                    "{} {}",
+                    "Config version number is missing\nTry to run".red(),
+                    "`niux --gen-config`".cold_white()
+                )
+            })?
+            .value()
+            .as_integer()
+            .with_context(|| "Invalid symbols in config version".red())?
+            .try_into()
+            .with_context(|| "Invalid config version".red())?;
+        Ok(version)
     }
 }

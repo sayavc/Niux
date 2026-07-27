@@ -7,7 +7,7 @@ use std::fs;
 impl Package {
     pub fn nvd(ptype: Target) -> anyhow::Result<()> {
         if let Some(features) = &NiuxConfig::get().features {
-            if !features.nvd_integration {
+            if !features.nvd_integration.unwrap_or(false) {
                 return Ok(());
             }
         } else {

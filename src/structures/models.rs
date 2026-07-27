@@ -47,6 +47,7 @@ pub enum Action {
     Update(Update),
     ShowPath,
     GenConfig,
+    Migrate,
     SetConfigPath,
     SetHookConfigPath,
     None,

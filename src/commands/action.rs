@@ -16,6 +16,7 @@ impl Args {
             _ if self.update => Action::Update(self.update_mode()),
             _ if self.show_path => Action::ShowPath,
             _ if self.gen_config => Action::GenConfig,
+            _ if self.migrate => Action::Migrate,
             _ if self.config.is_some() => Action::SetConfigPath,
             _ if self.hook_config.is_some() => Action::SetHookConfigPath,
             _ => Action::None,
