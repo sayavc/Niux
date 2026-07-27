@@ -17,14 +17,15 @@ impl Package {
         let deps_system = Self::transform(packages_system)?.sorted();
         let deps_home = Self::transform(packages_home)?.sorted();
 
+        println!("{}", "system".cold_white());
         for (pkg, deps) in deps_system {
-            println!("{}", "system".cold_white());
             if !print_packages(&pkg, deps.sorted().iter().peekable(), true) {
                 error!("system packages dependencies not found");
             }
         }
+
+        println!("{}", "home".cold_white());
         for (pkg, deps) in deps_home {
-            println!("{}", "home".cold_white());
             if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
                 error!("home packages dependencies not found")
             }
@@ -49,8 +50,8 @@ impl Package {
 
         let ndeps = Self::transform(packages)?.sorted();
 
+        println!("{}", ptype.cold_white());
         for (pkg, deps) in ndeps {
-            println!("{}", ptype.cold_white());
             if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
                 error!("{} packages dependencies not found", ptype)
             }
@@ -75,9 +76,9 @@ impl Package {
             .into_iter()
             .map(|p| {
                 if p.contains('#') {
-                    p
+                    p.trim().to_string()
                 } else {
-                    format!("nixpkgs#{p}")
+                    format!("nixpkgs#{}", p.trim())
                 }
             })
             .collect::<Vec<String>>()
