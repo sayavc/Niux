@@ -1,7 +1,6 @@
-use crate::error;
 use crate::structures::models::Just;
 use crate::structures::{AutoGenNiuxConfig, hook_config::HookConfig, models::HookEvent};
-use crate::utils::{run_bash_interactive, user_input, writer_write};
+use crate::utils::{Color, run_bash_interactive, user_input, writer_write};
 use anyhow::{Context, bail};
 use colored::Colorize;
 use std::fs;
@@ -20,13 +19,16 @@ impl HookConfig {
                 return Ok(());
             }
         }
+
         let config = include_str!("../assets/hook_config.kdl");
         let tmp = tempfile::NamedTempFile::new()?;
         fs::write(tmp.path(), config)?;
+
         writer_write(
             tmp.path().to_str().context("Invalid tmp path")?,
             cfg.hooks_config_path.clone(),
         )?;
+
         println!(
             "Config created in {}",
             cfg.hooks_config_path
@@ -40,10 +42,14 @@ impl HookConfig {
         let cfg = AutoGenNiuxConfig::get();
         let content = fs::read_to_string(&cfg.hooks_config_path).with_context(|| {
             format!(
-                "Failed to read config: {})",
-                cfg.hooks_config_path.display()
+                "{} {}\n{} {}",
+                "Failed to read config".red(),
+                cfg.config_path.to_string_lossy().red(),
+                "Try".red(),
+                "`niux --gen-config`".cold_white()
             )
         })?;
+
         Ok(
             match knuffel::parse::<HookConfig>("niux_hooks.kdl", &content) {
                 Ok(parsed_config) => parsed_config,
@@ -53,16 +59,21 @@ impl HookConfig {
                         .render_report(&mut s, &e)
                         .context("{e}")?;
                     eprintln!("{s}");
-                    bail!("Failed to parse hook config");
+                    bail!(
+                        "\n{} {}",
+                        "Failed to deserialize config\nTry".red(),
+                        "`niux --gen-config`".cold_white(),
+                    );
                 }
             },
         )
     }
+
     pub fn get() -> &'static Self {
         static CONFIG: OnceLock<HookConfig> = OnceLock::new();
         CONFIG.get_or_init(|| {
             Self::load().unwrap_or_else(|e| {
-                error!("Failed to init hook config\n{e}");
+                eprintln!("Failed to init hook config\n{e}");
                 std::process::exit(1);
             })
         })
@@ -72,6 +83,7 @@ impl HookConfig {
         if !cfg.hooks_config_path.exists() {
             return Ok(());
         }
+
         let config = HookConfig::get();
         let action = match event {
             HookEvent::PreInstall => "pre-install",
@@ -91,6 +103,7 @@ impl HookConfig {
             HookEvent::PreSearch => "pre-search",
             HookEvent::PostSearch => "post-search",
         };
+
         for hook in &config.actions {
             if hook.action == action {
                 run_bash_interactive::<Just>(&["sh", "-c", &hook.run])?;

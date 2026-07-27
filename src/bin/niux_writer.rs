@@ -57,13 +57,13 @@ fn create_autogen(config_path: &str, hook_config_path: &str) -> anyhow::Result<(
 }
 fn writer(tmp_path: &str, dest_path: &str) -> anyhow::Result<()> {
     let tmp_metadata = std::fs::metadata(tmp_path)
-        .with_context(|| format!("failed to write dir metadata: {tmp_path}"))?;
+        .with_context(|| format!("Failed to write dir metadata: {tmp_path}"))?;
     if tmp_metadata.uid() == 0 {
-        bail!("tmp_path must not be owned by root");
+        bail!("Tmp_path must not be owned by root");
     }
     if std::path::Path::new(dest_path).exists() {
         let metadata = std::fs::symlink_metadata(dest_path)
-            .with_context(|| format!("failed to read metadata: {dest_path}"))?;
+            .with_context(|| format!("Failed to read metadata: {dest_path}"))?;
         if metadata.file_type().is_symlink() {
             let real_path = std::fs::read_link(dest_path)?;
             let real_metadata = std::fs::metadata(&real_path)?;

@@ -1,18 +1,19 @@
 use crate::{
-    error,
     structures::{
         AutoGenNiuxConfig,
         models::{ConfigPath, HooksPath},
     },
-    utils::writer_init,
+    utils::{Color, writer_init},
 };
 use anyhow::Context;
 use colored::Colorize;
 use std::path::PathBuf;
 use std::sync::OnceLock;
+
 pub trait ConfigPathKind {
     fn transform(s: AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig;
 }
+
 impl ConfigPathKind for ConfigPath {
     fn transform(s: AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
         AutoGenNiuxConfig {
@@ -21,6 +22,7 @@ impl ConfigPathKind for ConfigPath {
         }
     }
 }
+
 impl ConfigPathKind for HooksPath {
     fn transform(s: AutoGenNiuxConfig, path: PathBuf) -> AutoGenNiuxConfig {
         AutoGenNiuxConfig {
@@ -29,6 +31,7 @@ impl ConfigPathKind for HooksPath {
         }
     }
 }
+
 impl Default for AutoGenNiuxConfig {
     fn default() -> Self {
         Self {
@@ -37,6 +40,7 @@ impl Default for AutoGenNiuxConfig {
         }
     }
 }
+
 impl AutoGenNiuxConfig {
     pub fn create<T>(path: PathBuf) -> anyhow::Result<()>
     where
@@ -46,21 +50,37 @@ impl AutoGenNiuxConfig {
         writer_init(s)?;
         Ok(())
     }
+
     pub fn init() -> anyhow::Result<()> {
         writer_init(Self::default())?;
         Ok(())
     }
+
     pub fn load() -> anyhow::Result<AutoGenNiuxConfig> {
-        let content = std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl")
-            .with_context(|| "Failed to read config: /var/lib/niux/niux_autogen.kdl".red())?;
-        knuffel::parse::<Self>("niux_autogen.kdl", &content)
-            .with_context(|| "Failed to parse config: /var/lib/niux/niux_autogen.kdl".red())
+        let content =
+            std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl").with_context(|| {
+                format!(
+                    "{}\n{} {}",
+                    "Failed to read config /var/lib/niux/niux_autogen.kdl".red(),
+                    "Try".red(),
+                    "`niux --gen-config`".cold_white(),
+                )
+            })?;
+
+        knuffel::parse::<Self>("niux_autogen.kdl", &content).with_context(|| {
+            format!(
+                "{} {}",
+                "Failed to deserialize config: /var/lib/niux/niux_autogen.kdl\nTry".red(),
+                "`niux --gen-config`".cold_white(),
+            )
+        })
     }
+
     pub fn get() -> &'static Self {
         static CONFIG: OnceLock<AutoGenNiuxConfig> = OnceLock::new();
         CONFIG.get_or_init(|| {
             Self::load().unwrap_or_else(|e| {
-                error!("Failed to init autogen config, try --gen-config\n{e}");
+                eprintln!("{e}");
                 std::process::exit(1);
             })
         })
