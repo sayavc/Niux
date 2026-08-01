@@ -65,10 +65,9 @@ fn writer(tmp_path: &str, dest_path: &str) -> anyhow::Result<()> {
         let metadata = std::fs::symlink_metadata(dest_path)
             .with_context(|| format!("Failed to read metadata: {dest_path}"))?;
         if metadata.file_type().is_symlink() {
-            let real_path = std::fs::read_link(dest_path)?;
-            let real_metadata = std::fs::metadata(&real_path)?;
+            let real_metadata = std::fs::canonicalize(dest_path)?.metadata()?;
             let file_uid = real_metadata.uid();
-            let current_uid = unsafe { libc::getuid() };
+            let current_uid = rustix::process::getuid().as_raw();
             if file_uid != current_uid {
                 bail!("Symlink points to file owned by another user");
             }
