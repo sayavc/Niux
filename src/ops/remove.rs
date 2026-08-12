@@ -6,6 +6,7 @@ use anyhow::Context;
 use colored::Colorize;
 use std::collections::HashSet;
 use std::fs;
+
 impl Package {
     pub fn remove(&self) -> anyhow::Result<()> {
         log::info!(
@@ -14,40 +15,56 @@ impl Package {
             self.ptype,
             self.name
         );
+
         let config = NiuxConfig::get();
+
         let config_path = match self.ptype {
             Target::Home => &config.config_paths.config_path_home,
             Target::System => &config.config_paths.config_path_system,
             _ => unreachable!(),
         };
+
         if !config_path.exists() {
             error!("{}", "Config path is wrong");
             return Ok(());
         }
 
-        let content = &fs::read_to_string(config_path)
+        let content = fs::read_to_string(config_path)
             .with_context(|| format!("Failed to read config: {}", config_path.display()))?;
 
         let range = match self.ptype {
-            Target::Home => config.get_range::<Home>(content)?,
-            Target::System => config.get_range::<System>(content)?,
+            Target::Home => config.get_range::<Home>(&content)?,
+            Target::System => config.get_range::<System>(&content)?,
             _ => unreachable!(),
         };
+
         let targets: HashSet<String> = self.name.clone().into_iter().collect();
+
         let result: Vec<String> = range
-            .clone()
-            .into_iter()
+            .packages
+            .iter()
             .filter(|p| !targets.contains(p.trim()))
+            .cloned()
             .collect();
-        let old_range = range.join("\n");
-        let new_range = result.join("\n");
-        if new_range == old_range {
+
+        let old = range.packages.join("\n");
+        let new = result.join("\n");
+
+        if old == new {
             println!("{}", "Packages not found".yellow());
             return Ok(());
         }
-        let new_content = content.replace(&old_range, &new_range);
+
+        let mut lines: Vec<String> = content.lines().map(String::from).collect();
+
+        lines.splice(range.start..range.end, result);
+
+        let new_content = lines.join("\n");
+
         write_changes_to_config(&new_content, config_path.to_path_buf())?;
+
         println!("{}", "Packages removed".green());
+
         Ok(())
     }
 }

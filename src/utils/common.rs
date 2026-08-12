@@ -1,5 +1,5 @@
 use crate::error;
-use crate::structures::models::{Early, Home, Just, System};
+use crate::structures::models::{Early, Home, Just, PackagesRange, System};
 use crate::structures::niux_config::ConfigMarkers;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig};
 use anyhow::{Context, bail};
@@ -147,7 +147,7 @@ impl ConfigTypeKind for System {
 }
 
 impl NiuxConfig {
-    pub fn get_range<T>(&self, content: &str) -> anyhow::Result<Vec<String>>
+    pub fn get_range<T>(&self, content: &str) -> anyhow::Result<PackagesRange>
     where
         T: ConfigTypeKind,
     {
@@ -164,11 +164,31 @@ impl NiuxConfig {
         else {
             bail!("Marker is not found: {marker_end}");
         };
-        Ok(lines[marker_start + 1..marker_end + marker_start]
+
+        let packages: Vec<String> = lines[marker_start + 1..marker_end + marker_start]
             .iter()
             .copied()
             .map(String::from)
-            .collect())
+            .collect();
+
+        let Some(indent) = packages
+            .first()
+            .map(|p| p.len() - p.trim_start().len())
+            .or_else(|| {
+                lines
+                    .get(marker_start)
+                    .map(|m| m.len() - m.trim_start().len())
+            })
+        else {
+            bail!("Failed to get indent, markers is wrong");
+        };
+
+        Ok(PackagesRange {
+            packages,
+            indent,
+            start: marker_start + 1,
+            end: marker_start + marker_end,
+        })
     }
 }
 

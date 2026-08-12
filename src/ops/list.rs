@@ -9,8 +9,11 @@ impl Package {
         let config = NiuxConfig::get();
         let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
         let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
-        let packages_system = config.get_range::<System>(&content_system)?.sorted();
-        let packages_home = config.get_range::<Home>(&content_home)?.sorted();
+        let packages_system = config
+            .get_range::<System>(&content_system)?
+            .packages
+            .sorted();
+        let packages_home = config.get_range::<Home>(&content_home)?.packages.sorted();
 
         if self.raw_mode {
             let packages: Vec<String> = packages_system.into_iter().chain(packages_home).collect();
@@ -34,8 +37,14 @@ impl Package {
         };
         let content = fs::read_to_string(config_path)?;
         let (range, ptype) = match self.ptype {
-            Target::Home => (config.get_range::<Home>(&content)?.sorted(), "home"),
-            Target::System => (config.get_range::<System>(&content)?.sorted(), "system"),
+            Target::Home => (
+                config.get_range::<Home>(&content)?.packages.sorted(),
+                "home",
+            ),
+            Target::System => (
+                config.get_range::<System>(&content)?.packages.sorted(),
+                "system",
+            ),
             _ => unreachable!(),
         };
 
@@ -55,7 +64,7 @@ impl Package {
         let result = match self.ptype {
             Target::Home => {
                 let content = fs::read_to_string(&config.config_paths.config_path_home)?;
-                let packages = config.get_range::<Home>(&content)?.sorted();
+                let packages = config.get_range::<Home>(&content)?.packages.sorted();
 
                 let found = packages
                     .iter()
@@ -64,7 +73,7 @@ impl Package {
             }
             Target::System => {
                 let content = fs::read_to_string(&config.config_paths.config_path_system)?;
-                let packages = config.get_range::<System>(&content)?.sorted();
+                let packages = config.get_range::<System>(&content)?.packages.sorted();
 
                 let found = packages
                     .iter()
@@ -74,8 +83,11 @@ impl Package {
             Target::None => {
                 let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
                 let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
-                let packages_system = config.get_range::<System>(&content_system)?.sorted();
-                let packages_home = config.get_range::<Home>(&content_home)?.sorted();
+                let packages_system = config
+                    .get_range::<System>(&content_system)?
+                    .packages
+                    .sorted();
+                let packages_home = config.get_range::<Home>(&content_home)?.packages.sorted();
 
                 let found_system = packages_system
                     .iter()

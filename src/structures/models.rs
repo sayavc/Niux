@@ -66,6 +66,14 @@ pub enum Rebuild {
     Both,
     None,
 }
+
+pub struct PackagesRange {
+    pub packages: Vec<String>,
+    pub start: usize,
+    pub end: usize,
+    pub indent: usize,
+}
+
 pub struct ConfigPath;
 pub struct HooksPath;
 

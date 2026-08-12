@@ -14,8 +14,8 @@ impl Package {
         let packages_system = config.get_range::<System>(&content_system)?;
         let packages_home = config.get_range::<Home>(&content_home)?;
 
-        let deps_system = Self::transform(packages_system)?.sorted();
-        let deps_home = Self::transform(packages_home)?.sorted();
+        let deps_system = Self::transform(packages_system.packages)?.sorted();
+        let deps_home = Self::transform(packages_home.packages)?.sorted();
 
         println!("{}", "system".cold_white());
         for (pkg, deps) in deps_system {
@@ -43,8 +43,8 @@ impl Package {
         };
         let content = fs::read_to_string(path)?;
         let (packages, ptype) = match self.ptype {
-            Target::Home => (config.get_range::<Home>(&content)?, "home"),
-            Target::System => (config.get_range::<System>(&content)?, "system"),
+            Target::Home => (config.get_range::<Home>(&content)?.packages, "home"),
+            Target::System => (config.get_range::<System>(&content)?.packages, "system"),
             _ => unreachable!(),
         };
 
