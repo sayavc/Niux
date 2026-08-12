@@ -1,5 +1,5 @@
 use crate::error;
-use crate::structures::models::{Early, Home, Just, PackagesRange, System};
+use crate::structures::models::{PackagesRange, Early, Home, Just, System};
 use crate::structures::niux_config::ConfigMarkers;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig};
 use anyhow::{Context, bail};

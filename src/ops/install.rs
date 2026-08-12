@@ -1,8 +1,8 @@
 use crate::error;
 use crate::structures::NiuxConfig;
-use crate::structures::models::{Package, Target};
-use crate::utils::write_changes_to_config;
-use anyhow::{Context, bail};
+use crate::structures::models::{Package, Target, System, Home};
+use crate::utils::{write_changes_to_config, user_input, Color};
+use anyhow::Context;
 use colored::Colorize;
 use std::fs;
 
@@ -15,48 +15,64 @@ impl Package {
             self.name
         );
 
+        let mut name = self.name.clone();
+
         let config = NiuxConfig::get();
+
         let config_path = match self.ptype {
             Target::Home => &config.config_paths.config_path_home,
             Target::System => &config.config_paths.config_path_system,
             _ => unreachable!(),
         };
 
-        if !std::path::Path::new(&config_path).exists() {
+        if !config_path.exists() {
             error!("Config path is wrong");
             return Ok(());
         }
 
-        let config_marker = match self.ptype {
-            Target::Home => &config.config_markers.marker_home,
-            Target::System => &config.config_markers.marker_system,
-            _ => unreachable!(),
-        };
-
         let content = fs::read_to_string(config_path)
             .with_context(|| format!("Failed to read config: {}", config_path.display()))?;
 
-        let mut lines: Vec<String> = content.lines().map(String::from).collect();
 
-        for i in 0..lines.len() {
-            if lines[i].contains(config_marker) {
-                let Some(marker_pos) = lines.iter().position(|l| l.contains(config_marker)) else {
-                    bail!("Marker is not found");
-                };
-                let indent = lines[marker_pos + 1].len() - lines[marker_pos + 1].trim_start().len();
-                for name in self.name.iter().rev() {
-                    lines.insert(marker_pos + 1, format!("{}{}", " ".repeat(indent), name));
+        let range = match self.ptype {
+            Target::System => config.get_range::<System>(&content),
+            Target::Home => config.get_range::<Home>(&content),
+            _ => unreachable!(),
+        }?;
+
+        for p in &range.packages {
+            let package = p.trim();
+            if self.name.contains(&package.to_string()) {
+                println!("{} {} {}", "Package".yellow(), package.cold_white(), "is already installed, add duplicate? y/n".yellow());
+                if user_input().trim() != "y" {
+                    name.retain(|pkg| pkg != package);
                 }
-                break;
             }
         }
 
-        let new_content = lines.join("\n");
+        if name.is_empty() {
+            return Ok(());
+        }
 
-        if new_content == content {
+        let mut new_range = range.packages.clone();
+
+        name
+            .iter()
+            .for_each(|n| new_range.push(format!("{}{}", " ".repeat(range.indent), n)));
+
+        let old = range.packages.join("\n");
+        let new = new_range.join("\n");
+
+        if new == old {
             println!("{}", "Nothing has changed...".yellow());
             return Ok(());
         }
+
+        let mut lines: Vec<String> = content.lines().map(String::from).collect();
+
+        lines.splice(range.start..range.end, new_range);
+
+        let new_content = lines.join("\n");
 
         write_changes_to_config(&new_content, config_path.to_path_buf())?;
 
