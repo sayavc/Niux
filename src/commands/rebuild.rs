@@ -3,8 +3,8 @@ impl Rebuild {
     pub fn rebuild_wrapper(&self, package: &Package) -> anyhow::Result<()> {
         match self {
             Rebuild::Both => {
-                package.rebuild_home()?;
                 package.rebuild_system()?;
+                package.rebuild_home()?;
                 Ok(())
             }
             Rebuild::Home => {
