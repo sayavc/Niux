@@ -24,7 +24,6 @@
 - **Управление пакетами одной командой** (например, `niux -Hi firefox`)
 - **Автоматическая пересборка конфигурации** сразу после внесения изменений
 - **Обновление флейков, и просмотр диффов генераций через интеграцию с `nvd`**
-- **Использование нативной производительности Rust** для безопасного, быстрого и эффективного выполнения
 
 Коротко: Niux привносит удобство традиционных пакетных менеджеров в `NixOS` и `home-manager`, оставаясь на 100% декларативным.
 
@@ -32,11 +31,10 @@
 
 - Быстрый и лёгкий интерфейс командной строки
 - Управление пакетами home и system декларативно
-- Написан на Rust для производительности и надёжности
 - Простой и понятный синтаксис команд
-- Поддержка standalone и module `home-manager`
+- Поддержка standalone и module-based `home-manager`
 - Поддержка `NixOS` с флейками и без
-- Хуки которые позволяют автоматизировать действия
+- Хуки, которые позволяют автоматизировать действия
 - Автодополнение как в `Pacman` и `apt` 
 - Опциональный встроенный вывод диффа генераций на базе утилиты `nvd`
 
@@ -55,7 +53,7 @@ home.packages = [
 #end
 ];
 ```
-Также, можно, и не добавлять `start` маркер (что еффективнее):
+Также можно и не добавлять `start` маркер (что эффективнее):
 ```nix
 home.packages = [
   firefox
@@ -72,7 +70,7 @@ home.packages = [
 
 ## Установка
 
-## flakes (standalone `home-manager`)
+### Flakes (standalone `home-manager`)
 
 Добавьте в `flake.nix`:
 
@@ -83,7 +81,7 @@ inputs.niux = {
 };
 ```
 
-Передать niux в `home-manager` через `extraSpecialArgs`:
+Передавайте niux в `home-manager` через `extraSpecialArgs`:
 
 ```nix 
 outputs = inputs@{ nixpkgs, home-manager, niux, ... }: {
@@ -95,7 +93,7 @@ homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
 };
 ```
 
-Добавить в `home.nix`:
+Добавьте в `home.nix`:
 
 ```nix
 { inputs, pkgs, ... }: {
@@ -107,7 +105,7 @@ homeConfigurations.youruser = home-manager.lib.homeManagerConfiguration {
 
 Запустите `home-manager switch` для применения.
 
-## `flakes` (module home-manager)
+### `Flakes` (module home-manager)
 
 Добавьте в `flake.nix`:
 
@@ -118,7 +116,7 @@ inputs.niux = {
 };
 ```
 
-Передать в `home-manager`:
+Передавайте в `home-manager`:
 
 ```nix
 outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
@@ -138,7 +136,7 @@ outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
 };
 ```
 
-Добавить в `home.nix`:
+Добавьте в `home.nix`:
 ```nix
 # home.nix
 { inputs, pkgs, ... }: {
@@ -148,7 +146,7 @@ outputs = inputs@{ self, nixpkgs, home-manager, niux, ... }: {
 }
 ```
 
-> **Примечание** Установка без `flakes` появится позже.
+> **Примечание:** Установка без `flakes` появится позже.
 > Контрибуции приветствуются!
 
 ## Конфигурация
@@ -191,7 +189,7 @@ niux -U                 # Обновить все флейки
 niux -USHa              # Обновить + пересобрать всё
 niux -HSa               # Пересобрать оба конфига
 ```
-Смотрите [English README](../README.md) для всех комбинаций   
+См. [English README](../README.md) для всех комбинаций   
 
 
 ## Справка по командам
@@ -206,12 +204,13 @@ niux -HSa               # Пересобрать оба конфига
 | `-a` - apply(rebuild) | Пересобрать конфиг |
 | `-l` - list | Список или поиск пакетов |
 | `-U` - Update | Обновить флейки |
+| `-d` - Deps | Показать зависимости пакета |
 | `--gen-config` | Сгенерировать конфигурацию |
 | `--config` | Указать свой путь к конфигу |
 | `--hook-config` | Указать путь к конфигу хуков |
 | `--show-path`| Получить пути конфигов | 
 | `--clear` | Очистка мусора |
-| `--search`| Поиск|
+| `--search`| Поиск (Для автодополнения)|
 
 ## Вклад в проект
 

@@ -25,7 +25,6 @@ Managing `home-manager` and `NixOS` packages manually requires opening configura
 - **Manage packages with a single command** (e.g., `niux -Hi firefox`)
 - **Automate configuration rebuilds** immediately after modifications
 - **Update flakes, clean system generations**, and manage environment states
-- **Leverage native Rust performance** for safe, fast, and resource-efficient execution
 
 In short: Niux brings the convenience of traditional package managers to NixOS and home-manager while staying fully declarative.
 
@@ -33,20 +32,19 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 
 - Fast and lightweight command-line interface
 - Manage home and system packages declaratively
-- Built with Rust for performance and reliability
 - Simple and intuitive command syntax
-- Supports both standalone and module home-manager
-- Supports NixOS with and without flakes
-- Hooks which allow to automate actions
-- Autocompletion like Pacman and apt  
+- Supports both standalone and module-based `home-manager`
+- Supports `NixOS` with or without flakes
+- Hooks for automating actions
+- Autocompletion like `Pacman` and `apt`  
 - Built-in generation diffing powered by `nvd` integration
 
 ## How it works
 
-Niux manages your packages by editing your nix config files directly.
-If markers are incorrect, Niux will tell you
+Niux manages your packages by editing your Nix configuration files directly.
+If the markers are incorrect, Niux will tell you
 
-To get started use default markers or add custom:
+To get started, use the default markers or define custom ones:
 
 ```nix
 home.packages = [
@@ -64,16 +62,16 @@ home.packages = [
 #end
 ];
 ```
-In that case `home.packages = [` will be used as `start` marker
+In that case `home.packages = [` will be used as the `start` marker
 
 When you run `niux -Hi firefox`, it inserts the package after the start marker.
-When you run `niux -Hr firefox`, it removes it — but only between the markers, so the rest of your config is never touched.
+When you run `niux -Hr firefox`, it removes it — but only between the markers, so the rest of your configuration is never touched.
 
-> Markers are configurable via your config
+> Markers are configurable via your configuration
 
 ## Installation
 
-## With flakes (standalone home-manager)
+### With flakes (standalone home-manager)
 
 Add to your `flake.nix` inputs:
 
@@ -108,7 +106,7 @@ Then add to your home.nix:
 
 Run `home-manager switch` to apply.
 
-## With flakes (module home-manager)
+### With flakes (module home-manager)
 
 Add to your `flake.nix` inputs:
 
@@ -183,7 +181,7 @@ niux --show-path
 ```bash
 niux -Hi firefox        # Install firefox for home
 niux -Si vim            # Install vim for system
-niux -Hia firefox       # Install firefox for home and rebuild system
+niux -Hia firefox       # Install firefox for home and rebuild home
 
 niux -Hr firefox        # Remove firefox from home
 
@@ -229,7 +227,7 @@ niux -l firefox             # Search everywhere
 niux -Hl firefox            # Search in home
 niux -Sl firefox            # Search in system
 niux -l firefox vim         # Search multiple
-niux --search firefox       # Search from nixpkgs 
+niux --search firefox       # Search packages in nixpkgs (for autocompletion) 
 ```
 
 ### Updates
@@ -255,6 +253,14 @@ niux -HSa                   # Rebuild both configs
 niux --clear                # Run nix-collect-garbage
 ```
 
+### Dependencies
+
+```bash
+niux -d                     # Print dependencies of all packages in the config
+niux -d firefox             # Print dependencies of a package
+```
+> For large outputs, using a `pager` is recommended
+
 ### Hooks 
 Example:
 ```kdl
@@ -263,7 +269,7 @@ actions {
     run "zsh /etc/niux_post_rebuild.zsh"
 }
 ```
-> available actions: install, remove, edit, rebuild, update, list, clear, search 
+> Available actions: install, remove, edit, rebuild, update, list, clear, search 
 
 ## Commands Reference
 
@@ -274,15 +280,16 @@ actions {
 | `-i` - install | Install packages |
 | `-r` - remove | Remove packages |
 | `-e` - edit | Edit mode |
-| `-a` - apply(rebuild) | Apply and rebuild configuration |
+| `-a` - apply (rebuild) | Apply and rebuild configuration |
 | `-l` - list | List or search packages |
 | `-U` - Update | Update flakes |
+| `-d` - Deps | Show package dependencies |
 | `--gen-config` | Generate default configuration |
-| `--config` | Use custom config path |
-| `--hook-config` | Use custom hook config path |
-| `--show-path` | Get config paths |
+| `--config` | Use custom configuration path |
+| `--hook-config` | Use custom hook configuration path |
+| `--show-path` | Show configuration path |
 | `--clear` | Run garbage collection |
-| `--search`| Search packages from nixpkgs |
+| `--search`| Search packages in nixpkgs (for autocompletion) |
 
 ## Contributing
 
