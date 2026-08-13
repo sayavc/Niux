@@ -1,7 +1,7 @@
 use crate::error;
 use crate::structures::NiuxConfig;
-use crate::structures::models::{Package, Target, System, Home};
-use crate::utils::{write_changes_to_config, user_input, Color};
+use crate::structures::models::{Home, Package, System, Target};
+use crate::utils::{Color, user_input, write_changes_to_config};
 use anyhow::Context;
 use colored::Colorize;
 use std::fs;
@@ -33,7 +33,6 @@ impl Package {
         let content = fs::read_to_string(config_path)
             .with_context(|| format!("Failed to read config: {}", config_path.display()))?;
 
-
         let range = match self.ptype {
             Target::System => config.get_range::<System>(&content),
             Target::Home => config.get_range::<Home>(&content),
@@ -43,7 +42,12 @@ impl Package {
         for p in &range.packages {
             let package = p.trim();
             if self.name.contains(&package.to_string()) {
-                println!("{} {} {}", "Package".yellow(), package.cold_white(), "is already installed, add duplicate? y/n".yellow());
+                println!(
+                    "{} {} {}",
+                    "Package".yellow(),
+                    package.cold_white(),
+                    "is already installed, add duplicate? y/n".yellow()
+                );
                 if user_input().trim() != "y" {
                     name.retain(|pkg| pkg != package);
                 }
@@ -56,8 +60,7 @@ impl Package {
 
         let mut new_range = range.packages.clone();
 
-        name
-            .iter()
+        name.iter()
             .for_each(|n| new_range.push(format!("{}{}", " ".repeat(range.indent), n)));
 
         let old = range.packages.join("\n");
