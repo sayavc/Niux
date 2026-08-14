@@ -64,6 +64,10 @@ pub struct Args {
     #[arg(short = 'd', conflicts_with_all = ["list", "install", "remove", "update", "apply"],
         help = "List packages dependencies")]
     pub deps: bool,
-    #[arg[hide = true]]
+    #[arg(value_name = "PACKAGE",
+        num_args = 0..)]
     pub package: Option<Vec<String>>,
+    #[arg(last = true,
+        value_name = "ARGS")]
+    pub extra: Vec<String>,
 }

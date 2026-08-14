@@ -57,9 +57,9 @@ pub enum Update {
     Just,
     Flakes,
 }
-pub enum Rebuild {
-    Home,
-    System,
+pub enum Rebuild<'a> {
+    Home(&'a [String]),
+    System(&'a [String]),
     Both,
     None,
 }

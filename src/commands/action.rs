@@ -34,10 +34,10 @@ impl Args {
             false => Update::Just,
         }
     }
-    pub fn rebuild_mode(&self) -> Rebuild {
+    pub fn rebuild_mode(&self) -> Rebuild<'_> {
         match (self.apply, self.system, self.home) {
-            (true, true, false) => Rebuild::System,
-            (true, false, true) => Rebuild::Home,
+            (true, true, false) => Rebuild::System(&self.extra),
+            (true, false, true) => Rebuild::Home(&self.extra),
             (true, true, true) => Rebuild::Both,
             _ => Rebuild::None,
         }
