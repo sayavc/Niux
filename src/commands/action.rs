@@ -12,7 +12,6 @@ impl Args {
             _ if self.search => Action::Search,
             _ if self.list => Action::List(self.list_mode()),
             _ if self.deps => Action::Deps(self.list_mode()),
-            _ if self.clear => Action::Clear,
             _ if self.update => Action::Update(self.update_mode()),
             _ if self.show_path => Action::ShowPath,
             _ if self.gen_config => Action::GenConfig,

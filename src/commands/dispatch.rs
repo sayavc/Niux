@@ -5,7 +5,6 @@ impl Action {
             Action::Install => package.install(),
             Action::Remove => package.remove(),
             Action::Edit => package.edit(),
-            Action::Clear => Package::clear(),
             Action::Search => package.search(),
             Action::Update(Update::Just) => Package::update(),
             Action::Update(Update::Flakes) => package.update_flake(),

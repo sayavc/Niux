@@ -98,8 +98,6 @@ impl HookConfig {
             HookEvent::PostUpdate => "post-update",
             HookEvent::PreList => "pre-list",
             HookEvent::PostList => "post-list",
-            HookEvent::PreClear => "pre-clear",
-            HookEvent::PostClear => "post-clear",
             HookEvent::PreSearch => "pre-search",
             HookEvent::PostSearch => "post-search",
         };

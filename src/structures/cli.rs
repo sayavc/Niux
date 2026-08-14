@@ -15,7 +15,7 @@ use clap::{ArgGroup, Parser};
         .multiple(true)
 ))]
 pub struct Args {
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list", "clear", "config", "hook_config", "show_path"],
+    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list", "config", "hook_config", "show_path"],
         help = "Generate a default configuration file")]
     pub gen_config: bool,
     #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list", "hook_config"],
@@ -32,13 +32,10 @@ pub struct Args {
     pub raw: bool,
     #[arg(long, help = "search packages with nix-search")]
     pub search: bool,
-    #[arg(long, conflicts_with_all = ["home", "system", "install", "remove", "update", "apply", "package", "list"],
-        help = "This is nix-collect-garbage")]
-    pub clear: bool,
-    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "config", "hook_config", "update", "list", "deps", "clear", "search", "show_path"],
+    #[arg(short = 'H', required_unless_present_any = ["system", "gen_config", "config", "hook_config", "update", "list", "deps", "search", "show_path"],
         help = "Manage home packages")]
     pub home: bool,
-    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "config", "hook_config", "update", "list", "deps", "clear", "search", "show_path"],
+    #[arg(short = 'S', required_unless_present_any = ["home", "gen_config", "config", "hook_config", "update", "list", "deps", "search", "show_path"],
         help = "Manage system packages")]
     pub system: bool,
     #[arg(short = 'i', conflicts_with_all = ["remove", "update", "search", "edit"], 

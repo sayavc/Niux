@@ -41,8 +41,4 @@ impl Package {
         run_bash_interactive::<Just>(&result)?;
         Ok(())
     }
-    pub fn clear() -> anyhow::Result<()> {
-        run_bash_interactive::<Just>(&["nix-collect-garbage"])?;
-        Ok(())
-    }
 }

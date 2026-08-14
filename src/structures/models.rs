@@ -17,8 +17,6 @@ pub enum HookEvent {
     PostUpdate,
     PreList,
     PostList,
-    PreClear,
-    PostClear,
     PreSearch,
     PostSearch,
 }
@@ -43,7 +41,6 @@ pub enum Action {
     Search,
     List(List),
     Deps(List),
-    Clear,
     Update(Update),
     ShowPath,
     GenConfig,
