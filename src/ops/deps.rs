@@ -1,7 +1,10 @@
 use crate::structures::NiuxConfig;
 use crate::structures::models::{Home, Just, Package, System, Target};
-use crate::utils::{Color, PathExt, SanitizePackages, SortExt, bash, print_packages};
+use crate::utils::{Color, PathExt, SanitizePackages, bash, print_packages};
+
 use serde_json::Value;
+
+use std::collections::{BTreeMap, BTreeSet};
 
 impl Package {
     pub fn deps_list_all() -> crate::NiuxResult<()> {
@@ -13,19 +16,19 @@ impl Package {
         let packages_system = config.get_range::<System>(&content_system)?;
         let packages_home = config.get_range::<Home>(&content_home)?;
 
-        let deps_system = Self::transform(packages_system.packages)?.sorted();
-        let deps_home = Self::transform(packages_home.packages)?.sorted();
+        let deps_system = Self::transform(packages_system.packages)?;
+        let deps_home = Self::transform(packages_home.packages)?;
 
         println!("{}", "system".cold_white());
         for (pkg, deps) in deps_system {
-            if !print_packages(&pkg, deps.sorted().iter().peekable(), true) {
+            if !print_packages(&pkg, deps.iter().peekable(), true) {
                 log::info!("system packages dependencies not found");
             }
         }
 
         println!("{}", "home".cold_white());
         for (pkg, deps) in deps_home {
-            if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
+            if !print_packages(&pkg, deps.iter().peekable(), false) {
                 log::info!("home packages dependencies not found");
             }
         }
@@ -51,11 +54,11 @@ impl Package {
             _ => unreachable!(),
         };
 
-        let ndeps = Self::transform(packages)?.sorted();
+        let ndeps = Self::transform(packages)?;
 
         println!("{}", ptype.cold_white());
         for (pkg, deps) in ndeps {
-            if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
+            if !print_packages(&pkg, deps.iter().peekable(), false) {
                 log::info!("{} packages dependencies not found", ptype)
             }
         }
@@ -64,10 +67,10 @@ impl Package {
 
     pub fn deps_list_do_package(&self) -> crate::NiuxResult<()> {
         log::info!("Deps list_do_package is started, ptype: {:?}", self.ptype);
-        let deps = Self::transform(self.name.clone())?.sorted();
+        let deps = Self::transform(self.name.clone())?;
 
         for (pkg, deps) in deps {
-            if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
+            if !print_packages(&pkg, deps.iter().peekable(), false) {
                 log::info!("system packages dependencies not found")
             }
         }
@@ -87,7 +90,7 @@ impl Package {
             .collect::<Vec<String>>()
     }
 
-    fn transform(packages: Vec<String>) -> crate::NiuxResult<Vec<(String, Vec<String>)>> {
+    fn transform(packages: Vec<String>) -> crate::NiuxResult<BTreeMap<String, BTreeSet<String>>> {
         log::info!("Deps transform is started, packages: {:?}", packages);
 
         let packages = Self::normalize_installable(packages).sanitize_packages();
@@ -117,16 +120,15 @@ impl Package {
             ));
         }
 
-        let result: Vec<(String, Vec<String>)> = drv_map
+        Ok(drv_map
             .into_iter()
             .filter_map(|(name, drv)| {
                 let names = drv["inputs"]["drvs"].as_object()?.keys();
-                let deps: Vec<String> = names
+                let deps: BTreeSet<String> = names
                     .filter_map(|n| Some(n.split_once("-")?.1.rsplit_once(".drv")?.0.to_string()))
                     .collect();
                 Some((name, deps))
             })
-            .collect();
-        Ok(result)
+            .collect())
     }
 }
