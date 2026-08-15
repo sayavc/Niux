@@ -1,7 +1,7 @@
 use crate::structures::models::Package;
 use crate::structures::{Args, models::Action};
 impl Action {
-    pub fn dispatch_config(&self, args: &Args) -> anyhow::Result<bool> {
+    pub fn dispatch_config(&self, args: &Args) -> crate::NiuxResult<bool> {
         match self {
             Action::ShowPath => {
                 Package::show_path();

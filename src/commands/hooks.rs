@@ -1,7 +1,7 @@
 use crate::structures::models::HookEvent;
 use crate::structures::{hook_config::HookConfig, models::Action};
 impl Action {
-    pub fn pre_hooks(&self) -> anyhow::Result<()> {
+    pub fn pre_hooks(&self) -> crate::NiuxResult<()> {
         match self {
             Action::Install => HookConfig::run(HookEvent::PreInstall),
             Action::Remove => HookConfig::run(HookEvent::PreRemove),
@@ -12,7 +12,7 @@ impl Action {
             _ => Ok(()),
         }
     }
-    pub fn post_hooks(&self) -> anyhow::Result<()> {
+    pub fn post_hooks(&self) -> crate::NiuxResult<()> {
         match self {
             Action::Install => HookConfig::run(HookEvent::PostInstall),
             Action::Remove => HookConfig::run(HookEvent::PostRemove),

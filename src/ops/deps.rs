@@ -1,16 +1,15 @@
-use crate::error;
 use crate::structures::NiuxConfig;
 use crate::structures::models::{Home, Just, Package, System, Target};
-use crate::utils::{Color, SanitizePackages, SortExt, bash, print_packages};
-use anyhow::Context;
+use crate::utils::{Color, PathExt, SanitizePackages, SortExt, bash, print_packages};
 use serde_json::Value;
-use std::fs;
 
 impl Package {
-    pub fn deps_list_all() -> anyhow::Result<()> {
+    pub fn deps_list_all() -> crate::NiuxResult<()> {
         let config = NiuxConfig::get();
-        let content_system = fs::read_to_string(&config.config_paths.config_path_system)?;
-        let content_home = fs::read_to_string(&config.config_paths.config_path_home)?;
+
+        let content_system = config.config_paths.config_path_system.read_to_string()?;
+        let content_home = config.config_paths.config_path_home.read_to_string()?;
+
         let packages_system = config.get_range::<System>(&content_system)?;
         let packages_home = config.get_range::<Home>(&content_home)?;
 
@@ -20,28 +19,32 @@ impl Package {
         println!("{}", "system".cold_white());
         for (pkg, deps) in deps_system {
             if !print_packages(&pkg, deps.sorted().iter().peekable(), true) {
-                error!("system packages dependencies not found");
+                log::info!("system packages dependencies not found");
             }
         }
 
         println!("{}", "home".cold_white());
         for (pkg, deps) in deps_home {
             if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
-                error!("home packages dependencies not found")
+                log::info!("home packages dependencies not found");
             }
         }
         Ok(())
     }
 
-    pub fn deps_list_type(&self) -> anyhow::Result<()> {
+    pub fn deps_list_type(&self) -> crate::NiuxResult<()> {
         log::info!("Deps list_type is started, ptype: {:?}", self.ptype);
+
         let config = NiuxConfig::get();
+
         let path = match self.ptype {
             Target::Home => &config.config_paths.config_path_home,
             Target::System => &config.config_paths.config_path_system,
             _ => unreachable!(),
         };
-        let content = fs::read_to_string(path)?;
+
+        let content = path.read_to_string()?;
+
         let (packages, ptype) = match self.ptype {
             Target::Home => (config.get_range::<Home>(&content)?.packages, "home"),
             Target::System => (config.get_range::<System>(&content)?.packages, "system"),
@@ -53,19 +56,19 @@ impl Package {
         println!("{}", ptype.cold_white());
         for (pkg, deps) in ndeps {
             if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
-                error!("{} packages dependencies not found", ptype)
+                log::info!("{} packages dependencies not found", ptype)
             }
         }
         Ok(())
     }
 
-    pub fn deps_list_do_package(&self) -> anyhow::Result<()> {
+    pub fn deps_list_do_package(&self) -> crate::NiuxResult<()> {
         log::info!("Deps list_do_package is started, ptype: {:?}", self.ptype);
         let deps = Self::transform(self.name.clone())?.sorted();
 
         for (pkg, deps) in deps {
             if !print_packages(&pkg, deps.sorted().iter().peekable(), false) {
-                error!("system packages dependencies not found")
+                log::info!("system packages dependencies not found")
             }
         }
         Ok(())
@@ -84,7 +87,7 @@ impl Package {
             .collect::<Vec<String>>()
     }
 
-    fn transform(packages: Vec<String>) -> anyhow::Result<Vec<(String, Vec<String>)>> {
+    fn transform(packages: Vec<String>) -> crate::NiuxResult<Vec<(String, Vec<String>)>> {
         log::info!("Deps transform is started, packages: {:?}", packages);
 
         let packages = Self::normalize_installable(packages).sanitize_packages();
@@ -97,9 +100,10 @@ impl Package {
 
         let output = bash::<Just>(&command)?;
         let json = serde_json::from_str::<Value>(&output)?;
+
         let drv_values = json["derivations"]
             .as_object()
-            .context("Failed to parse nix derivation json")?
+            .ok_or(crate::NixDrvErr::InvalidDerivationsJson)?
             .values();
 
         let mut drv_map: Vec<(String, &Value)> = Vec::new();
@@ -107,7 +111,7 @@ impl Package {
             drv_map.push((
                 d["name"]
                     .as_str()
-                    .context("Failed to parse package name")?
+                    .ok_or(crate::NixDrvErr::InvalidNameInDerivationsJson)?
                     .to_string(),
                 d,
             ));

@@ -1,13 +1,12 @@
 use crate::structures::models::Just;
 use crate::structures::{NiuxConfig, models::Commands};
 use crate::utils::common::{bash, user_input};
-use anyhow::Context;
 use colored::Colorize;
 impl NiuxConfig {
-    pub fn autodetect() -> anyhow::Result<Commands> {
+    pub fn autodetect() -> crate::NiuxResult<Commands> {
         println!("{}", "Do you have flakes? y/n".blue());
         let flakes = loop {
-            match user_input().trim() {
+            match user_input()?.trim() {
                 "y" => break true,
                 "n" => break false,
                 _ => {
@@ -16,9 +15,11 @@ impl NiuxConfig {
                 }
             };
         };
+
         println!("{}", "Do you have standalone home-manager? y/n".blue());
+
         let home_manager = loop {
-            match user_input().trim() {
+            match user_input()?.trim() {
                 "y" => break true,
                 "n" => break false,
                 _ => {
@@ -27,8 +28,11 @@ impl NiuxConfig {
                 }
             };
         };
+
         println!("{}", "Please specify your text editor".blue());
-        let editor = user_input().trim().to_string();
+
+        let editor = user_input()?.trim().to_string();
+
         Ok(Commands {
             rebuild_system: Self::rebuild_system_command(flakes)?,
             rebuild_home: Self::rebuild_home_command(flakes, home_manager)?,
@@ -37,27 +41,33 @@ impl NiuxConfig {
             editor,
         })
     }
-    fn rebuild_system_command(flakes: bool) -> anyhow::Result<String> {
+    fn rebuild_system_command(flakes: bool) -> crate::NiuxResult<String> {
         let hostname = bash::<Just>(&["hostname"])?;
         let mut args = vec!["sudo", "nixos-rebuild", "switch"];
         let flake_arg = format!("/etc/nixos#{}", hostname);
+
         if flakes {
             args.push("--flake");
             args.push(&flake_arg);
         }
+
         Ok(args.join(" "))
     }
-    fn rebuild_home_command(flakes: bool, home_manager: bool) -> anyhow::Result<String> {
-        let user = std::env::var("USER").with_context(|| "Failed to get var $USER".to_string())?;
+    fn rebuild_home_command(flakes: bool, home_manager: bool) -> crate::NiuxResult<String> {
+        let user = std::env::var("USER").map_err(|e| crate::EnvErr::from_var("USER", e))?;
+
         if !home_manager {
             return Self::rebuild_system_command(flakes);
         }
+
         let flake_arg = &format!("/etc/nixos#{}", user);
         let mut args = vec!["home-manager", "switch"];
+
         if flakes {
             args.push("--flake");
             args.push(flake_arg);
         }
+
         Ok(args.join(" "))
     }
     pub fn update_flake_command(flakes: bool) -> String {

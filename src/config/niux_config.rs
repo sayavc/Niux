@@ -1,24 +1,23 @@
 use crate::structures::AutoGenNiuxConfig;
 use crate::structures::NiuxConfig;
-use crate::utils::{Color, get_privilege_type, user_input, writer_write};
-use anyhow::{Context, bail};
+use crate::utils::{get_privilege_type, user_input, writer_write};
 use colored::Colorize;
 use std::fs;
 use std::sync::OnceLock;
 
 impl NiuxConfig {
-    pub fn create() -> anyhow::Result<()> {
+    pub fn create() -> crate::NiuxResult<()> {
         let cfg = AutoGenNiuxConfig::get();
         if cfg.config_path.exists() {
             println!("{}", "Niux config already exists, rewrite? y/n".blue());
-            if user_input().trim() != "y" {
+            if user_input()?.trim() != "y" {
                 return Ok(());
             }
         }
         let commands = NiuxConfig::autodetect()?;
         let default_config = format!(
             include_str!("../assets/default_config.kdl"),
-            get_privilege_type(),
+            get_privilege_type()?,
             commands.editor,
             commands.rebuild_home,
             commands.rebuild_system,
@@ -27,15 +26,20 @@ impl NiuxConfig {
         );
 
         let tmp = tempfile::NamedTempFile::new()
-            .with_context(|| "Failed to create tmp file".to_string())?;
-        fs::write(tmp.path(), default_config)?;
+            .map_err(|e| crate::TmpErr::Create { e })
+            .map_err(crate::IoErr::from)?;
+
+        fs::write(tmp.path(), default_config)
+            .map_err(|e| crate::TmpErr::Write { e })
+            .map_err(crate::IoErr::from)?;
+
         println!(
             "Config created in {}. Please edit it",
             cfg.config_path.to_string_lossy().green()
         );
 
         writer_write(
-            tmp.path().to_str().context("Invalid tmp path")?,
+            tmp.path().to_str().ok_or(crate::Utf8Err::InvalidUtf8)?,
             cfg.config_path.clone(),
         )?;
         Ok(())
@@ -46,40 +50,43 @@ impl NiuxConfig {
 
         CONFIG.get_or_init(|| {
             Self::load().unwrap_or_else(|e| {
-                eprintln!("{e}");
+                let mut s = String::new();
+
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap_or_else(|e| panic!("Failed to render diagnostic\nKdl err: {e}"));
+
+                eprintln!("{s}");
                 std::process::exit(1);
             })
         })
     }
 
-    pub fn load() -> anyhow::Result<NiuxConfig> {
+    pub fn load() -> crate::NiuxResult<NiuxConfig> {
         let cfg = AutoGenNiuxConfig::get();
         let content = fs::read_to_string(&cfg.config_path)
-            .map_err(|e| anyhow::anyhow!("{e:?}"))
-            .with_context(|| {
-                format!(
-                    "{} {}\n{} {}",
-                    "Failed to read config".red(),
-                    cfg.config_path.to_string_lossy().red(),
-                    "Try".red(),
-                    "`niux --gen-config`".cold_white()
-                )
-            })?;
+            .map_err(|e| crate::ConfigIoErr::read(cfg.config_path.clone(), e))
+            .map_err(crate::IoErr::from)?;
 
-        Ok(match knuffel::parse::<NiuxConfig>("config.kdl", &content) {
-            Ok(parsed_config) => parsed_config,
+        match knuffel::parse::<Self>(
+            &cfg.config_path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy(),
+            &content,
+        ) {
+            Ok(parsed) => Ok(parsed),
             Err(e) => {
                 let mut s = String::new();
+
                 miette::GraphicalReportHandler::new()
                     .render_report(&mut s, &e)
-                    .context("{e}")?;
+                    .unwrap_or_else(|e| panic!("Failed to render diagnostic\nKdl err: {e}"));
+
                 eprintln!("{s}");
-                bail!(
-                    "\n{} {}",
-                    "Failed to deserialize config\nTry".red(),
-                    "`niux --gen-config`".cold_white()
-                );
+
+                Err(crate::IoErr::from(crate::ConfigIoErr::Parse).into())
             }
-        })
+        }
     }
 }

@@ -1,14 +1,11 @@
-use crate::error;
 use crate::structures::NiuxConfig;
 use crate::structures::models::{Home, Package, System, Target};
-use crate::utils::write_changes_to_config;
-use anyhow::Context;
+use crate::utils::{PathExt, write_changes_to_config};
 use colored::Colorize;
 use std::collections::HashSet;
-use std::fs;
 
 impl Package {
-    pub fn remove(&self) -> anyhow::Result<()> {
+    pub fn remove(&self) -> crate::NiuxResult<()> {
         log::info!(
             "Remove is started, rebuild: {}, ptype: {:?}, package: {:?}",
             self.rebuild,
@@ -24,13 +21,7 @@ impl Package {
             _ => unreachable!(),
         };
 
-        if !config_path.exists() {
-            error!("{}", "Config path is wrong");
-            return Ok(());
-        }
-
-        let content = fs::read_to_string(config_path)
-            .with_context(|| format!("Failed to read config: {}", config_path.display()))?;
+        let content = config_path.read_to_string()?;
 
         let range = match self.ptype {
             Target::Home => config.get_range::<Home>(&content)?,

@@ -1,20 +1,24 @@
 use crate::structures::hook_config::HookConfig;
 use crate::structures::models::{HookEvent, Just, Package};
 use crate::utils::{bash, command_exists};
-use anyhow::bail;
 impl Package {
-    pub fn search(&self) -> anyhow::Result<()> {
+    pub fn search(&self) -> crate::NiuxResult<()> {
         log::info!("search is started, package: {:?}", self.name);
+        let command = "nix-search";
+
         HookConfig::run(HookEvent::PreSearch)?;
-        if !command_exists("nix-search") {
-            bail!("nix-search is not installed");
+        if !command_exists(command) {
+            return Err(crate::NixErr::CommandNotInstalled {
+                command: command.into(),
+            }
+            .into());
         }
         if self.name.is_empty() {
             return Ok(());
         }
         println!(
             "{}",
-            bash::<Just>(&["nix-search", &self.name[0]])?
+            bash::<Just>(&[command, &self.name[0]])?
                 .lines()
                 .filter_map(|line| line.split_whitespace().next())
                 .collect::<Vec<_>>()

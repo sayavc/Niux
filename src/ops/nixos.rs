@@ -4,42 +4,36 @@ use crate::{
     utils::run_bash_interactive,
 };
 impl Package {
-    pub fn rebuild_home(&self, extra: &[String]) -> anyhow::Result<()> {
+    pub fn rebuild_home(&self, extra: &[String]) -> crate::NiuxResult<()> {
         HookConfig::run(HookEvent::PreRebuild)?;
-
         let mut args = shell_words::split(&NiuxConfig::get().commands.rebuild_home)?;
-
         args.extend(extra.iter().cloned());
 
         run_bash_interactive::<Just>(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
 
         Package::nvd(Target::Home)?;
-
         HookConfig::run(HookEvent::PostRebuild)?;
 
         Ok(())
     }
-    pub fn rebuild_system(&self, extra: &[String]) -> anyhow::Result<()> {
+    pub fn rebuild_system(&self, extra: &[String]) -> crate::NiuxResult<()> {
         HookConfig::run(HookEvent::PreRebuild)?;
-
         let mut args = shell_words::split(&NiuxConfig::get().commands.rebuild_system)?;
-
         args.extend(extra.iter().cloned());
 
         run_bash_interactive::<Just>(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
 
         Package::nvd(Target::System)?;
-
         HookConfig::run(HookEvent::PostRebuild)?;
 
         Ok(())
     }
-    pub fn update() -> anyhow::Result<()> {
+    pub fn update() -> crate::NiuxResult<()> {
         let args = shell_words::split(&NiuxConfig::get().commands.update_flake)?;
         run_bash_interactive::<Just>(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
         Ok(())
     }
-    pub fn update_flake(&self) -> anyhow::Result<()> {
+    pub fn update_flake(&self) -> crate::NiuxResult<()> {
         let args = shell_words::split(&NiuxConfig::get().commands.update_inputs)?;
 
         let result: Vec<&str> = args

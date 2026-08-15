@@ -3,10 +3,8 @@ use crate::{
         AutoGenNiuxConfig,
         models::{ConfigPath, HooksPath},
     },
-    utils::{Color, writer_init},
+    utils::writer_init,
 };
-use anyhow::Context;
-use colored::Colorize;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
@@ -42,7 +40,7 @@ impl Default for AutoGenNiuxConfig {
 }
 
 impl AutoGenNiuxConfig {
-    pub fn create<T>(path: PathBuf) -> anyhow::Result<()>
+    pub fn create<T>(path: PathBuf) -> crate::NiuxResult<()>
     where
         T: ConfigPathKind,
     {
@@ -51,36 +49,46 @@ impl AutoGenNiuxConfig {
         Ok(())
     }
 
-    pub fn init() -> anyhow::Result<()> {
+    pub fn init() -> crate::NiuxResult<()> {
         writer_init(Self::default())?;
         Ok(())
     }
 
-    pub fn load() -> anyhow::Result<AutoGenNiuxConfig> {
-        let content =
-            std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl").with_context(|| {
-                format!(
-                    "{}\n{} {}",
-                    "Failed to read config /var/lib/niux/niux_autogen.kdl".red(),
-                    "Try".red(),
-                    "`niux --gen-config`".cold_white(),
-                )
-            })?;
+    pub fn load() -> crate::NiuxResult<AutoGenNiuxConfig> {
+        let content = std::fs::read_to_string("/var/lib/niux/niux_autogen.kdl")
+            .map_err(|e| crate::ConfigIoErr::Read {
+                path: PathBuf::from("/var/lib/niux_autogen.kdl"),
+                e,
+            })
+            .map_err(crate::IoErr::from)?;
 
-        knuffel::parse::<Self>("niux_autogen.kdl", &content).with_context(|| {
-            format!(
-                "{} {}",
-                "Failed to deserialize config: /var/lib/niux/niux_autogen.kdl\nTry".red(),
-                "`niux --gen-config`".cold_white(),
-            )
-        })
+        match knuffel::parse::<Self>("niux_autogen.kdl", &content) {
+            Ok(parsed) => Ok(parsed),
+            Err(e) => {
+                let mut s = String::new();
+
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap_or_else(|e| panic!("Failed to render diagnostic\nKdl err: {e}"));
+
+                eprintln!("{s}");
+
+                Err(crate::IoErr::from(crate::ConfigIoErr::Parse).into())
+            }
+        }
     }
 
     pub fn get() -> &'static Self {
         static CONFIG: OnceLock<AutoGenNiuxConfig> = OnceLock::new();
         CONFIG.get_or_init(|| {
             Self::load().unwrap_or_else(|e| {
-                eprintln!("{e}");
+                let mut s = String::new();
+
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap_or_else(|e| panic!("Failed to render diagnostic\nKdl err: {e}"));
+
+                eprintln!("{s}");
                 std::process::exit(1);
             })
         })

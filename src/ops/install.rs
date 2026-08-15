@@ -1,13 +1,10 @@
-use crate::error;
 use crate::structures::NiuxConfig;
 use crate::structures::models::{Home, Package, System, Target};
-use crate::utils::{Color, user_input, write_changes_to_config};
-use anyhow::Context;
+use crate::utils::{Color, PathExt, user_input, write_changes_to_config};
 use colored::Colorize;
-use std::fs;
 
 impl Package {
-    pub fn install(&self) -> anyhow::Result<()> {
+    pub fn install(&self) -> crate::NiuxResult<()> {
         log::info!(
             "Install is started, rebuild: {}, ptype: {:?}, package: {:?}",
             self.rebuild,
@@ -25,13 +22,7 @@ impl Package {
             _ => unreachable!(),
         };
 
-        if !config_path.exists() {
-            error!("Config path is wrong");
-            return Ok(());
-        }
-
-        let content = fs::read_to_string(config_path)
-            .with_context(|| format!("Failed to read config: {}", config_path.display()))?;
+        let content = config_path.read_to_string()?;
 
         let range = match self.ptype {
             Target::System => config.get_range::<System>(&content),
@@ -48,7 +39,7 @@ impl Package {
                     package.cold_white(),
                     "is already installed, add duplicate? y/n".yellow()
                 );
-                if user_input().trim() != "y" {
+                if user_input()?.trim() != "y" {
                     name.retain(|pkg| pkg != package);
                 }
             }

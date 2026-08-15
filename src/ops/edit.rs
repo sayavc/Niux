@@ -1,11 +1,10 @@
 use crate::structures::NiuxConfig;
 use crate::structures::models::{Home, Just, Package, System, Target};
-use crate::utils::{run_bash_interactive, write_changes_to_config};
-use anyhow::{Context, bail};
+use crate::utils::{PathExt, run_bash_interactive, write_changes_to_config};
 use colored::Colorize;
 use tempfile::NamedTempFile;
 impl Package {
-    pub fn edit(&self) -> anyhow::Result<()> {
+    pub fn edit(&self) -> crate::NiuxResult<()> {
         let config = NiuxConfig::get();
 
         let config_path = match self.ptype {
@@ -14,22 +13,13 @@ impl Package {
             _ => unreachable!(),
         };
 
-        let state_dir = match dirs::state_dir() {
-            Some(num) => num,
-            None => {
-                let home = dirs::home_dir().unwrap_or_default();
-                bail!("{}.local/state does not exist", home.display());
-            }
-        };
-
-        let config_dir = state_dir.join("niux");
-        if !config_dir.exists() {
-            std::fs::create_dir_all(config_dir).with_context(|| "Failed to create state dir")?;
-        }
+        let state_dir = dirs::state_dir()
+            .ok_or(crate::StateDirErr::Unavailable)
+            .map_err(crate::IoErr::from)?;
 
         let backup_path = state_dir.join("niux/config_backup.nix");
 
-        let content = std::fs::read_to_string(config_path)?;
+        let content = config_path.read_to_string()?;
 
         let range = match self.ptype {
             Target::Home => config.get_range::<Home>(&content),
@@ -39,28 +29,34 @@ impl Package {
 
         let old_packages = range.packages.join("\n");
 
-        let tmp = NamedTempFile::new().context("Failed to create tmp file")?;
+        let tmp = NamedTempFile::new()
+            .map_err(|e| crate::TmpErr::Create { e })
+            .map_err(crate::IoErr::from)?;
 
-        std::fs::write(tmp.path(), &old_packages)?;
+        std::fs::write(tmp.path(), &old_packages)
+            .map_err(|e| crate::TmpErr::Write { e })
+            .map_err(crate::IoErr::from)?;
 
-        match run_bash_interactive::<Just>(&[
+        run_bash_interactive::<Just>(&[
             &config.environment.editor,
-            tmp.path()
-                .to_str()
-                .context("path to tmp contains invalid UTF-8")?,
-        ]) {
-            Ok(_) => {}
-            Err(e) => bail!("{e}"),
-        }
+            tmp.path().to_str().ok_or(crate::Utf8Err::InvalidUtf8)?,
+        ])?;
 
-        std::fs::copy(config_path, state_dir.join(&backup_path))?;
+        std::fs::copy(config_path, state_dir.join(&backup_path))
+            .map_err(|e| crate::ConfigIoErr::copy(config_path, state_dir.join(&backup_path), e))
+            .map_err(crate::IoErr::from)?;
 
         println!(
             "backup created: {}",
             backup_path.display().to_string().blue()
         );
 
-        let new = std::fs::read_to_string(tmp.path())?.trim_end().to_string();
+        let new = std::fs::read_to_string(tmp.path())
+            .map_err(|e| crate::TmpErr::Read { e })
+            .map_err(crate::IoErr::from)?
+            .trim_end()
+            .to_string();
+
         let new_packages: Vec<String> = new.lines().map(String::from).collect();
 
         if old_packages == new {

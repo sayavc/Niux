@@ -1,8 +1,6 @@
-use crate::error;
 use crate::structures::models::{Early, Home, Just, PackagesRange, System};
 use crate::structures::niux_config::ConfigMarkers;
 use crate::structures::{AutoGenNiuxConfig, NiuxConfig};
-use anyhow::{Context, bail};
 use colored::{Colorize, CustomColor};
 use git_version::git_version;
 use std::borrow::Cow;
@@ -11,93 +9,105 @@ use std::path::PathBuf;
 use std::process;
 use tempfile::NamedTempFile;
 pub trait BashType {
-    fn otype(first: &str) -> Cow<'_, str>;
+    fn otype(first: &str) -> crate::NiuxResult<Cow<'_, str>>;
 }
 impl BashType for Just {
-    fn otype(first: &str) -> Cow<'_, str> {
+    fn otype(first: &str) -> crate::NiuxResult<Cow<'_, str>> {
         if first == "sudo" {
-            Cow::Borrowed(&NiuxConfig::get().environment.su_type)
+            Ok(Cow::Borrowed(&NiuxConfig::get().environment.su_type))
         } else {
-            Cow::Borrowed(first)
+            Ok(Cow::Borrowed(first))
         }
     }
 }
 
 impl BashType for Early {
-    fn otype(first: &str) -> Cow<'_, str> {
+    fn otype(first: &str) -> crate::NiuxResult<Cow<'_, str>> {
         if first == "sudo" {
-            Cow::Owned(get_privilege_type())
+            Ok(Cow::Owned(get_privilege_type()?))
         } else {
-            Cow::Borrowed(first)
+            Ok(Cow::Borrowed(first))
         }
     }
 }
 
-pub fn run_bash_interactive<T>(args: &[&str]) -> anyhow::Result<()>
+pub fn run_bash_interactive<T>(args: &[&str]) -> crate::NiuxResult<()>
 where
     T: BashType,
 {
-    let first = T::otype(args[0]);
+    let first = T::otype(args[0])?;
     let status = process::Command::new(&*first)
         .args(&args[1..])
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .status()?;
+        .status()
+        .map_err(|e| crate::ExecuteErr::Io { e })?;
     if !status.success() {
-        bail!(
-            "Command executed unsuccessfully (exit code: {}), (command: {})",
-            status.code().unwrap_or(-1),
-            args.join(" ")
-        );
+        return Err(crate::ExecuteErr::ExitStatus {
+            code: status.code().unwrap_or(-1),
+            command: args.join(" "),
+        }
+        .into());
     }
     Ok(())
 }
 
-pub fn bash<T>(args: &[&str]) -> anyhow::Result<String>
+pub fn bash<T>(args: &[&str]) -> crate::NiuxResult<String>
 where
     T: BashType,
 {
-    let first = T::otype(args[0]);
+    let first = T::otype(args[0])?;
     let result = process::Command::new(&*first)
         .args(&args[1..])
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .output()
-        .context("Failed to run bash command")?;
+        .map_err(|e| crate::ExecuteErr::Io { e })?;
     if !result.status.success() {
-        error!(
-            "Failed to execute command: {}\n {}",
-            args.join(" "),
-            String::from_utf8_lossy(&result.stderr)
-        );
-        process::exit(1);
+        return Err(crate::ExecuteErr::ExitStatus {
+            code: result.status.code().unwrap_or(-1),
+            command: args.join(" "),
+        }
+        .into());
     }
     Ok(String::from_utf8(result.stdout)
-        .with_context(|| "Invalid UTF-8 symbols")?
+        .map_err(|e| crate::Utf8Err::InvalidUtf8String { e })?
         .trim()
         .to_string())
 }
 
-pub fn writer_init(paths: AutoGenNiuxConfig) -> anyhow::Result<()> {
-    bash::<Early>(&[
+pub fn writer_init(paths: AutoGenNiuxConfig) -> crate::NiuxResult<()> {
+    let config_path = paths.config_path;
+    let hook_config_path = paths.hooks_config_path;
+
+    let args = [
         "sudo",
         "niux-writer",
         "init",
-        paths.config_path.to_str().context("Invalid config path")?,
-        paths
-            .hooks_config_path
-            .to_str()
-            .context("Invalid hook config path")?,
-    ])?;
+        config_path.to_str().ok_or(crate::ConfigErr::Invalid {
+            path: config_path.clone(),
+        })?,
+        hook_config_path.to_str().ok_or(crate::ConfigErr::Invalid {
+            path: hook_config_path.clone(),
+        })?,
+    ];
+
+    bash::<Early>(&args)?;
+
     Ok(())
 }
 
-pub fn writer_write(tmp_path: &str, dest_path: PathBuf) -> anyhow::Result<()> {
-    bash::<Early>(&[
+pub fn writer_write(tmp_path: &str, dest_path: PathBuf) -> crate::NiuxResult<()> {
+    let args = [
         "sudo",
         "niux-writer",
         "write",
         tmp_path,
-        dest_path.to_str().with_context(|| "Invalid config path")?,
-    ])?;
+        dest_path.to_str().ok_or(crate::ConfigErr::Invalid {
+            path: dest_path.clone(),
+        })?,
+    ];
+
+    bash::<Early>(&args)?;
+
     Ok(())
 }
 
@@ -110,24 +120,31 @@ pub fn command_exists(cmd: &str) -> bool {
         .unwrap_or(false)
 }
 
-pub fn write_changes_to_config(content: &str, dest_path: PathBuf) -> anyhow::Result<()> {
-    let tmp = NamedTempFile::new().context("Failed to create tmp file")?;
-    std::fs::write(tmp.path(), content).context("Failed to write content in tmp")?;
-    writer_write(tmp.path().to_str().context("Invalid tmp path")?, dest_path)?;
+pub fn write_changes_to_config(content: &str, dest_path: PathBuf) -> crate::NiuxResult<()> {
+    let tmp = NamedTempFile::new()
+        .map_err(|e| crate::TmpErr::Create { e })
+        .map_err(crate::IoErr::from)?;
+
+    std::fs::write(tmp.path(), content)
+        .map_err(|e| crate::TmpErr::Write { e })
+        .map_err(crate::IoErr::from)?;
+
+    writer_write(
+        tmp.path().to_str().ok_or(crate::Utf8Err::InvalidUtf8)?,
+        dest_path,
+    )?;
     Ok(())
 }
 
-pub fn user_input() -> String {
+pub fn user_input() -> crate::NiuxResult<String> {
     let mut user_input = String::new();
     print!("> ");
     std::io::Write::flush(&mut std::io::stdout()).ok();
     std::io::stdin()
         .read_line(&mut user_input)
-        .unwrap_or_else(|e| {
-            error!("{e}");
-            process::exit(1);
-        });
-    user_input
+        .map_err(|e| crate::InputErr::Read { e })?;
+
+    Ok(user_input)
 }
 
 pub trait ConfigTypeKind {
@@ -147,7 +164,7 @@ impl ConfigTypeKind for System {
 }
 
 impl NiuxConfig {
-    pub fn get_range<T>(&self, content: &str) -> anyhow::Result<PackagesRange>
+    pub fn get_range<T>(&self, content: &str) -> crate::NiuxResult<PackagesRange>
     where
         T: ConfigTypeKind,
     {
@@ -155,14 +172,20 @@ impl NiuxConfig {
         let lines: Vec<&str> = content.lines().collect();
 
         let Some(marker_start) = lines.iter().position(|l| l.contains(marker_start)) else {
-            bail!("Marker is not found: {marker_start}");
+            return Err(crate::NixConfigErr::MarkerNotFound {
+                marker: marker_start.to_string(),
+            }
+            .into());
         };
 
         let Some(marker_end) = lines[marker_start..]
             .iter()
             .position(|l| l.contains(marker_end))
         else {
-            bail!("Marker is not found: {marker_end}");
+            return Err(crate::NixConfigErr::MarkerNotFound {
+                marker: marker_end.to_string(),
+            }
+            .into());
         };
 
         let packages: Vec<String> = lines[marker_start + 1..marker_end + marker_start]
@@ -180,7 +203,7 @@ impl NiuxConfig {
                     .map(|m| m.len() - m.trim_start().len())
             })
         else {
-            bail!("Failed to get indent, markers is wrong");
+            return Err(crate::NixConfigErr::WrongIndent.into());
         };
 
         Ok(PackagesRange {
@@ -192,14 +215,14 @@ impl NiuxConfig {
     }
 }
 
-pub fn get_privilege_type() -> String {
+pub fn get_privilege_type() -> crate::NiuxResult<String> {
     for su in &["doas", "sudo", "run0", "pkexec"] {
         if command_exists(su) {
-            return su.to_string();
+            return Ok(su.to_string());
         }
     }
     println!("Privilege escalation tool not found. Enter yours (e.g. sudo, doas)");
-    user_input().trim().to_string()
+    Ok(user_input()?.trim().to_string())
 }
 
 pub fn version() -> String {
@@ -272,5 +295,15 @@ impl SanitizePackages for Vec<String> {
         self.into_iter()
             .filter(|p| !p.contains(['(', ')', '[', ']', '$', '{', '}', ',']))
             .collect()
+    }
+}
+
+pub trait PathExt {
+    fn read_to_string(&self) -> Result<String, crate::IoErr>;
+}
+
+impl PathExt for std::path::Path {
+    fn read_to_string(&self) -> Result<String, crate::IoErr> {
+        Ok(std::fs::read_to_string(self).map_err(|e| crate::ConfigIoErr::read(self, e))?)
     }
 }

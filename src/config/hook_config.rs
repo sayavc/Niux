@@ -1,31 +1,35 @@
 use crate::structures::models::Just;
 use crate::structures::{AutoGenNiuxConfig, hook_config::HookConfig, models::HookEvent};
-use crate::utils::{Color, run_bash_interactive, user_input, writer_write};
-use anyhow::{Context, bail};
+use crate::utils::{run_bash_interactive, user_input, writer_write};
 use colored::Colorize;
 use std::fs;
 use std::sync::OnceLock;
 impl HookConfig {
-    pub fn create() -> anyhow::Result<()> {
+    pub fn create() -> crate::NiuxResult<()> {
         let cfg = AutoGenNiuxConfig::get();
         if cfg.hooks_config_path.exists() {
             println!("{}", "Hooks config already exists, rewrite? y/n".blue());
-            if user_input().trim() != "y" {
+            if user_input()?.trim() != "y" {
                 return Ok(());
             }
         } else {
             println!("{}", "Create hook config? y/n".blue());
-            if user_input().trim() != "y" {
+            if user_input()?.trim() != "y" {
                 return Ok(());
             }
         }
 
         let config = include_str!("../assets/hook_config.kdl");
-        let tmp = tempfile::NamedTempFile::new()?;
-        fs::write(tmp.path(), config)?;
+        let tmp = tempfile::NamedTempFile::new()
+            .map_err(|e| crate::TmpErr::Create { e })
+            .map_err(crate::IoErr::from)?;
+
+        fs::write(tmp.path(), config)
+            .map_err(|e| crate::TmpErr::Write { e })
+            .map_err(crate::IoErr::from)?;
 
         writer_write(
-            tmp.path().to_str().context("Invalid tmp path")?,
+            tmp.path().to_str().ok_or(crate::Utf8Err::InvalidUtf8)?,
             cfg.hooks_config_path.clone(),
         )?;
 
@@ -33,52 +37,55 @@ impl HookConfig {
             "Config created in {}",
             cfg.hooks_config_path
                 .to_str()
-                .context("Invalid config path")?
+                .ok_or(crate::Utf8Err::InvalidUtf8)?
                 .green()
         );
         Ok(())
     }
-    pub fn load() -> anyhow::Result<Self> {
+    pub fn load() -> crate::NiuxResult<Self> {
         let cfg = AutoGenNiuxConfig::get();
-        let content = fs::read_to_string(&cfg.hooks_config_path).with_context(|| {
-            format!(
-                "{} {}\n{} {}",
-                "Failed to read config".red(),
-                cfg.config_path.to_string_lossy().red(),
-                "Try".red(),
-                "`niux --gen-config`".cold_white()
-            )
-        })?;
+        let content = fs::read_to_string(&cfg.hooks_config_path)
+            .map_err(|e| crate::ConfigIoErr::read(cfg.hooks_config_path.clone(), e))
+            .map_err(crate::IoErr::from)?;
 
-        Ok(
-            match knuffel::parse::<HookConfig>("niux_hooks.kdl", &content) {
-                Ok(parsed_config) => parsed_config,
-                Err(e) => {
-                    let mut s = String::new();
-                    miette::GraphicalReportHandler::new()
-                        .render_report(&mut s, &e)
-                        .context("{e}")?;
-                    eprintln!("{s}");
-                    bail!(
-                        "\n{} {}",
-                        "Failed to deserialize config\nTry".red(),
-                        "`niux --gen-config`".cold_white(),
-                    );
-                }
-            },
-        )
+        match knuffel::parse::<Self>(
+            &cfg.hooks_config_path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy(),
+            &content,
+        ) {
+            Ok(parsed) => Ok(parsed),
+            Err(e) => {
+                let mut s = String::new();
+
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap_or_else(|e| panic!("Failed to render diagnostic\nKdl err: {e}"));
+
+                eprintln!("{s}");
+
+                Err(crate::IoErr::from(crate::ConfigIoErr::Parse).into())
+            }
+        }
     }
 
     pub fn get() -> &'static Self {
         static CONFIG: OnceLock<HookConfig> = OnceLock::new();
         CONFIG.get_or_init(|| {
             Self::load().unwrap_or_else(|e| {
-                eprintln!("Failed to init hook config\n{e}");
+                let mut s = String::new();
+
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap_or_else(|e| panic!("Failed to render diagnostic\nKdl err: {e}"));
+
+                eprintln!("{s}");
                 std::process::exit(1);
             })
         })
     }
-    pub fn run(event: HookEvent) -> anyhow::Result<()> {
+    pub fn run(event: HookEvent) -> crate::NiuxResult<()> {
         let cfg = AutoGenNiuxConfig::get();
         if !cfg.hooks_config_path.exists() {
             return Ok(());

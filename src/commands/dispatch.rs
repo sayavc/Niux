@@ -1,6 +1,6 @@
 use crate::structures::models::{Action, List, Package, Update};
 impl Action {
-    pub fn dispatch(&self, package: &Package) -> anyhow::Result<()> {
+    pub fn dispatch(&self, package: &Package) -> crate::NiuxResult<()> {
         match self {
             Action::Install => package.install(),
             Action::Remove => package.remove(),

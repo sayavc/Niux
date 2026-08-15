@@ -1,6 +1,6 @@
 use crate::structures::models::{Package, Rebuild};
 impl Rebuild<'_> {
-    pub fn rebuild_wrapper(&self, package: &Package) -> anyhow::Result<()> {
+    pub fn rebuild_wrapper(&self, package: &Package) -> crate::NiuxResult<()> {
         match self {
             Rebuild::Both => {
                 package.rebuild_system(&[])?;
