@@ -13,12 +13,6 @@ impl Package {
             _ => unreachable!(),
         };
 
-        let state_dir = dirs::state_dir()
-            .ok_or(crate::StateDirErr::Unavailable)
-            .map_err(crate::IoErr::from)?;
-
-        let backup_path = state_dir.join("niux/config_backup.nix");
-
         let content = config_path.read_to_string()?;
 
         let range = match self.ptype {
@@ -41,15 +35,6 @@ impl Package {
             &config.environment.editor,
             tmp.path().to_str().ok_or(crate::Utf8Err::InvalidUtf8)?,
         ])?;
-
-        std::fs::copy(config_path, state_dir.join(&backup_path))
-            .map_err(|e| crate::ConfigIoErr::copy(config_path, state_dir.join(&backup_path), e))
-            .map_err(crate::IoErr::from)?;
-
-        println!(
-            "backup created: {}",
-            backup_path.display().to_string().blue()
-        );
 
         let new = std::fs::read_to_string(tmp.path())
             .map_err(|e| crate::TmpErr::Read { e })
