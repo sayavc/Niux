@@ -18,7 +18,6 @@ impl NiuxConfig {
         let default_config = format!(
             include_str!("../assets/default_config.kdl"),
             get_privilege_type()?,
-            commands.editor,
             commands.rebuild_home,
             commands.rebuild_system,
             commands.update_flake,

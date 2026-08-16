@@ -173,6 +173,10 @@ pub enum ConfigErr {
     #[error("Invalid config path: {path}")]
     #[diagnostic(help("ensure that the config path in your Niux configuration is valid"))]
     Invalid { path: PathBuf },
+
+    #[error("Invalid signature: {sig}")]
+    #[diagnostic(help("ensure that the signature in your Niux configuration is valid"))]
+    InvalidSig { sig: String },
 }
 
 #[derive(Debug, thiserror::Error, miette::Diagnostic)]

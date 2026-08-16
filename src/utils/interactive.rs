@@ -29,16 +29,11 @@ impl NiuxConfig {
             };
         };
 
-        println!("{}", "Please specify your text editor".blue());
-
-        let editor = user_input()?.trim().to_string();
-
         Ok(Commands {
             rebuild_system: Self::rebuild_system_command(flakes)?,
             rebuild_home: Self::rebuild_home_command(flakes, home_manager)?,
             update_flake: Self::update_flake_command(flakes),
             update_inputs: Self::update_inputs_command(flakes),
-            editor,
         })
     }
     fn rebuild_system_command(flakes: bool) -> crate::NiuxResult<String> {

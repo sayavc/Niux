@@ -153,13 +153,13 @@ pub trait ConfigTypeKind {
 
 impl ConfigTypeKind for Home {
     fn get_markers(markers: &ConfigMarkers) -> (&str, &str) {
-        (&markers.marker_home, &markers.marker_home_end)
+        (&markers.home, &markers.home_end)
     }
 }
 
 impl ConfigTypeKind for System {
     fn get_markers(markers: &ConfigMarkers) -> (&str, &str) {
-        (&markers.marker_system, &markers.marker_system_end)
+        (&markers.system, &markers.system_end)
     }
 }
 

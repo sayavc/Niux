@@ -25,7 +25,6 @@ pub struct Commands {
     pub rebuild_home: String,
     pub update_flake: String,
     pub update_inputs: String,
-    pub editor: String,
 }
 #[derive(Debug)]
 pub enum Target {

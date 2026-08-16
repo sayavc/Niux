@@ -1,6 +1,7 @@
 mod commands;
 mod config;
 mod errors;
+mod integrations;
 mod ops;
 mod structures;
 mod utils;

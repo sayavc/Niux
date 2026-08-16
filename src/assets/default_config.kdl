@@ -1,20 +1,48 @@
+// =====================================================================
+// Niux Configuration File                  
+// Environment variables (e.g. ${{HOME}}, ${{EDITOR}}, ${{XDG_CONFIG_HOME}})
+// are supported in values across all sections of this config.    
+// =====================================================================
+
+
+// Path configuration for NixOS and Home Manager targets
 config-paths {{
-    config-path-home "/etc/nixos/home/home.nix"
-    config-path-system "/etc/nixos/modules/packages.nix"
+    home "/etc/nixos/home/packages.nix"
+    system "/etc/nixos/modules/packages.nix"
 }}
+
+// Exact lines used by niux to locate package lists inside your configs
 config-markers {{
-    marker-home "home.packages = with pkgs; ["
-    marker-system "environment.systemPackages = with pkgs; ["
-    marker-home-end "];"
-    marker-system-end "];"
+    home "home.packages = with pkgs; ["
+    system "environment.systemPackages = with pkgs; ["
+    home-end "];"
+    system-end "];"
 }}
+
+// Optional integrations and tools (can be safely omitted or set to "off")
 features {{
-    nvd-integration false
+    nvd-integration {{
+        off // Replace "off" with "on" to enable nvd diffs
+        dirs {{
+            system "/nix/var/nix/profiles"
+            home "${{HOME}}/.local/state/nix/profiles"
+        }}
+        // File name templates for profile generations ([number] is replaced by gen number)
+        signature {{
+            system "system-[number]-link"
+            home "profile-[number]-link"
+        }}
+    }}
 }}
+
+// Runtime environment overrides
 environment {{
     su-type "{}"
-    editor "{}"
+    editor "${{EDITOR}}"
 }}
+
+// System rebuild and flake management commands
+// Note: "update-inputs" supports the [packages] placeholder for targeted input updates
 commands {{
     rebuild-home "{}"
     rebuild-system "{}"

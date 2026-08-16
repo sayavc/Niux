@@ -10,8 +10,8 @@ impl Package {
     pub fn deps_list_all() -> crate::NiuxResult<()> {
         let config = NiuxConfig::get();
 
-        let content_system = config.config_paths.config_path_system.read_to_string()?;
-        let content_home = config.config_paths.config_path_home.read_to_string()?;
+        let content_system = config.config_paths.system.read_to_string()?;
+        let content_home = config.config_paths.home.read_to_string()?;
 
         let packages_system = config.get_range::<System>(&content_system)?;
         let packages_home = config.get_range::<Home>(&content_home)?;
@@ -41,8 +41,8 @@ impl Package {
         let config = NiuxConfig::get();
 
         let path = match self.ptype {
-            Target::Home => &config.config_paths.config_path_home,
-            Target::System => &config.config_paths.config_path_system,
+            Target::Home => &config.config_paths.home,
+            Target::System => &config.config_paths.system,
             _ => unreachable!(),
         };
 

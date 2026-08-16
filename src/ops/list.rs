@@ -7,8 +7,8 @@ impl Package {
     pub fn list_all(&self) -> crate::NiuxResult<()> {
         let config = NiuxConfig::get();
 
-        let content_system = config.config_paths.config_path_system.read_to_string()?;
-        let content_home = config.config_paths.config_path_home.read_to_string()?;
+        let content_system = config.config_paths.system.read_to_string()?;
+        let content_home = config.config_paths.home.read_to_string()?;
 
         let packages_system = config
             .get_range::<System>(&content_system)?
@@ -34,8 +34,8 @@ impl Package {
         let config = NiuxConfig::get();
 
         let config_path = match self.ptype {
-            Target::Home => &config.config_paths.config_path_home,
-            Target::System => &config.config_paths.config_path_system,
+            Target::Home => &config.config_paths.home,
+            Target::System => &config.config_paths.system,
             _ => unreachable!(),
         };
 
@@ -67,8 +67,8 @@ impl Package {
     pub fn list_do_package(&self) -> crate::NiuxResult<()> {
         let config = NiuxConfig::get();
 
-        let path_system = config.config_paths.config_path_system.clone();
-        let path_home = config.config_paths.config_path_home.clone();
+        let path_system = config.config_paths.system.clone();
+        let path_home = config.config_paths.home.clone();
 
         let result = match self.ptype {
             Target::Home => {

@@ -20,28 +20,60 @@ pub struct NiuxConfig {
 #[derive(knuffel::Decode, replace_env)]
 pub struct ConfigPaths {
     #[knuffel(child, unwrap(argument))]
-    pub config_path_home: PathBuf,
+    pub home: PathBuf,
     #[knuffel(child, unwrap(argument))]
-    pub config_path_system: PathBuf,
+    pub system: PathBuf,
 }
 
 #[derive(knuffel::Decode, Clone, replace_env)]
 pub struct ConfigMarkers {
     #[knuffel(child, unwrap(argument))]
-    pub marker_home: String,
+    pub home: String,
     #[knuffel(child, unwrap(argument))]
-    pub marker_system: String,
+    pub system: String,
     #[knuffel(child, unwrap(argument))]
-    pub marker_home_end: String,
+    pub home_end: String,
     #[knuffel(child, unwrap(argument))]
-    pub marker_system_end: String,
+    pub system_end: String,
 }
-#[derive(knuffel::Decode, Default, replace_env)]
+
+#[derive(knuffel::Decode, replace_env)]
 pub struct Features {
-    #[knuffel(child, unwrap(argument))]
-    #[replace_env(skip)]
-    pub nvd_integration: bool,
+    #[knuffel(child)]
+    pub nvd_integration: Option<Nvd>,
 }
+
+#[derive(knuffel::Decode, Clone, replace_env)]
+pub struct Nvd {
+    #[knuffel(child)]
+    #[replace_env(skip)]
+    pub on: bool,
+    #[knuffel(child)]
+    #[replace_env(skip)]
+    #[allow(dead_code)]
+    off: bool,
+    #[knuffel(child)]
+    pub dirs: NvdDirs,
+    #[knuffel(child)]
+    pub signature: NvdSig,
+}
+
+#[derive(knuffel::Decode, Clone, replace_env)]
+pub struct NvdDirs {
+    #[knuffel(child, unwrap(argument))]
+    pub system: PathBuf,
+    #[knuffel(child, unwrap(argument))]
+    pub home: PathBuf,
+}
+
+#[derive(knuffel::Decode, Clone, replace_env)]
+pub struct NvdSig {
+    #[knuffel(child, unwrap(argument))]
+    pub system: String,
+    #[knuffel(child, unwrap(argument))]
+    pub home: String,
+}
+
 #[derive(knuffel::Decode, replace_env)]
 pub struct Environment {
     #[knuffel(child, unwrap(argument))]
@@ -49,6 +81,7 @@ pub struct Environment {
     #[knuffel(child, unwrap(argument))]
     pub editor: String,
 }
+
 #[derive(knuffel::Decode, replace_env)]
 pub struct Commands {
     #[knuffel(child, unwrap(argument))]
@@ -60,6 +93,7 @@ pub struct Commands {
     #[knuffel(child, unwrap(argument))]
     pub update_inputs: String,
 }
+
 // auto generated config
 #[derive(knuffel::Decode, Clone, replace_env)]
 pub struct AutoGenNiuxConfig {

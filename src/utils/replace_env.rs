@@ -6,10 +6,9 @@ fn transform(s: &str) -> String {
     });
 
     let res = re.replace_all(s, |caps: &regex::Captures| {
-        std::env::var(&caps[1])
-            .unwrap_or_else(|_| caps[0].to_string())
+        std::env::var(&caps[1]).unwrap_or_else(|_| caps[0].to_string())
     });
-        res.into_owned()
+    res.into_owned()
 }
 
 #[allow(dead_code)]
@@ -81,7 +80,10 @@ mod tests {
         assert_eq!(cfg.path, PathBuf::from("/home/ABC/fire"));
         assert_eq!(cfg.no_env, String::from("blablalba"));
         assert_eq!(cfg.broken_env, PathBuf::from("${123ABC}"));
-        assert_eq!(cfg.one_broken_env, String::from("just: ABC, broken: ${1RE}"));
+        assert_eq!(
+            cfg.one_broken_env,
+            String::from("just: ABC, broken: ${1RE}")
+        );
         assert_eq!(cfg.trash_symbols, PathBuf::from("123^;&}$ABC"));
     }
 }

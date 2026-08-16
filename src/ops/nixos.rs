@@ -1,5 +1,6 @@
 use crate::{
-    structures::models::{HookEvent, Just, Package, Target},
+    integrations::nvd,
+    structures::models::{Home, HookEvent, Just, Package, System},
     structures::{NiuxConfig, hook_config::HookConfig},
     utils::run_bash_interactive,
 };
@@ -11,7 +12,8 @@ impl Package {
 
         run_bash_interactive::<Just>(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
 
-        Package::nvd(Target::Home)?;
+        nvd::<Home>()?;
+
         HookConfig::run(HookEvent::PostRebuild)?;
 
         Ok(())
@@ -23,7 +25,8 @@ impl Package {
 
         run_bash_interactive::<Just>(&args.iter().map(String::as_str).collect::<Vec<_>>())?;
 
-        Package::nvd(Target::System)?;
+        nvd::<System>()?;
+
         HookConfig::run(HookEvent::PostRebuild)?;
 
         Ok(())

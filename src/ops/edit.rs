@@ -8,8 +8,8 @@ impl Package {
         let config = NiuxConfig::get();
 
         let config_path = match self.ptype {
-            Target::Home => &config.config_paths.config_path_home,
-            Target::System => &config.config_paths.config_path_system,
+            Target::Home => &config.config_paths.home,
+            Target::System => &config.config_paths.system,
             _ => unreachable!(),
         };
 
