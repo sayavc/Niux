@@ -18,6 +18,8 @@ git-version = "0.3.9"
 serde_json = "1.0.151"
 rustix = { version = "1.1.4", features = ["process"] }
 thiserror = "2.0.20"
+niux-macros = { path = "niux-macros" }
+regex = "1.13.1"
 
 [[bin]]
 name = "niux"

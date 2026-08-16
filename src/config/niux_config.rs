@@ -1,6 +1,6 @@
 use crate::structures::AutoGenNiuxConfig;
 use crate::structures::NiuxConfig;
-use crate::utils::{get_privilege_type, user_input, writer_write};
+use crate::utils::{get_privilege_type, replace_env::ReplaceEnv, user_input, writer_write};
 use colored::Colorize;
 use std::fs;
 use std::sync::OnceLock;
@@ -75,7 +75,10 @@ impl NiuxConfig {
                 .to_string_lossy(),
             &content,
         ) {
-            Ok(parsed) => Ok(parsed),
+            Ok(mut parsed) => {
+                parsed.replace_env();
+                Ok(parsed)
+            }
             Err(e) => {
                 let mut s = String::new();
 

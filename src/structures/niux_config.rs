@@ -1,7 +1,9 @@
 use knuffel;
+use niux_macros::replace_env;
 use std::path::PathBuf;
-#[derive(knuffel::Decode)]
-// Niux.rs
+
+// main cfg
+#[derive(knuffel::Decode, replace_env)]
 pub struct NiuxConfig {
     #[knuffel(child)]
     pub config_paths: ConfigPaths,
@@ -15,7 +17,7 @@ pub struct NiuxConfig {
     pub commands: Commands,
 }
 
-#[derive(knuffel::Decode)]
+#[derive(knuffel::Decode, replace_env)]
 pub struct ConfigPaths {
     #[knuffel(child, unwrap(argument))]
     pub config_path_home: PathBuf,
@@ -23,7 +25,7 @@ pub struct ConfigPaths {
     pub config_path_system: PathBuf,
 }
 
-#[derive(knuffel::Decode, Clone)]
+#[derive(knuffel::Decode, Clone, replace_env)]
 pub struct ConfigMarkers {
     #[knuffel(child, unwrap(argument))]
     pub marker_home: String,
@@ -34,19 +36,20 @@ pub struct ConfigMarkers {
     #[knuffel(child, unwrap(argument))]
     pub marker_system_end: String,
 }
-#[derive(knuffel::Decode, Default)]
+#[derive(knuffel::Decode, Default, replace_env)]
 pub struct Features {
     #[knuffel(child, unwrap(argument))]
+    #[replace_env(skip)]
     pub nvd_integration: bool,
 }
-#[derive(knuffel::Decode)]
+#[derive(knuffel::Decode, replace_env)]
 pub struct Environment {
     #[knuffel(child, unwrap(argument))]
     pub su_type: String,
     #[knuffel(child, unwrap(argument))]
     pub editor: String,
 }
-#[derive(knuffel::Decode)]
+#[derive(knuffel::Decode, replace_env)]
 pub struct Commands {
     #[knuffel(child, unwrap(argument))]
     pub rebuild_home: String,
@@ -58,7 +61,7 @@ pub struct Commands {
     pub update_inputs: String,
 }
 // auto generated config
-#[derive(knuffel::Decode, Clone)]
+#[derive(knuffel::Decode, Clone, replace_env)]
 pub struct AutoGenNiuxConfig {
     #[knuffel(child, unwrap(argument))]
     pub config_path: PathBuf,
