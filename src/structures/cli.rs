@@ -5,7 +5,11 @@ use clap::{ArgGroup, Parser};
     name = "niux",
     version = version(),
     about = "A simple CLI tool for managing NixOS packages",
-    long_about = "Declarative NixOS/home-manager CLI package manager written in Rust.\n\nManage system and home packages, update flake inputs, and rebuild configurations.",
+    long_about = "Declarative NixOS/home-manager CLI package manager written in Rust.\n\n\
+                  Manage system and home packages, update flake inputs, and rebuild configurations.\n\n\
+                  PASSTHROUGH ARGS:\n   \
+                  Use `--` to pass flags directly to the command executed from your config\n   \
+                  (e.g., passing --offline, --show-trace, or custom build flags).",
     before_help = "Niux - NixOS Package Manager",
     after_help = "EXAMPLES:\n  niux -Hi firefox                Install firefox for home\n  niux -Hr firefox                Remove firefox from home\n  niux -Si vim                    Install vim for system\n  niux -Sr vim                    Remove vim from system\n  niux -HSi firefox vim           Install firefox for home and vim for system\n\nBUILD & APPLY:\n  niux -Ha                        Rebuild home config\n  niux -Sa                        Rebuild system config\n  niux -HSa                       Rebuild home and system configs\n  niux -Hia firefox               Install firefox for home and rebuild\n  niux -Sia vim                   Install vim for system and rebuild\n\nLISTING & SEARCH:\n  niux -Hl                        List packages in home config\n  niux -Sl                        List packages in system config\n  niux -Hl firefox                Search \"firefox\" in home config\n  niux -l firefox                 Search \"firefox\" in home and system configs\n\nUPDATES:\n  niux -U                         Update all flakes\n  niux -Ua                        Update flakes and rebuild\n  niux -Ua nixpkgs                Update specific flake input (e.g., nixpkgs)\n  niux -USa                       Update flakes and rebuild system and home\n  niux -USHa                      Update flakes and rebuild system and home configs\n\nFor more information, visit: https://github.com/sayavc/niux"
 )]
@@ -64,9 +68,10 @@ pub struct Args {
     #[arg(short = 'd', conflicts_with_all = ["list", "install", "remove", "update", "apply"],
         help = "List packages dependencies")]
     pub deps: bool,
-    #[arg(value_name = "PACKAGE",
-        num_args = 0..)]
+    #[arg(value_name = "NAME",
+        num_args = 0..,
+        help = "Target package names(s) or flake input(s)")]
     pub package: Option<Vec<String>>,
-    #[arg(last = true, value_name = "ARGS")]
+    #[arg(last = true, value_name = "ARGS", help = "Append flags/arguments directly to the executed config command")]
     pub extra: Vec<String>,
 }
