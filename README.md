@@ -41,7 +41,7 @@ In short: Niux brings the convenience of traditional package managers to NixOS a
 
 ## How it works
 
-Niux manages your packages by editing your Nix configuration files directly.
+Niux manages your packages by editing your `Nix` configuration files directly.
 If the markers are incorrect, Niux will tell you
 
 To get started, use the default markers or define custom ones:
@@ -248,6 +248,12 @@ niux -Sa                    # Rebuild system config
 niux -HSa                   # Rebuild both configs
 ```
 
+### Rebuild Passthrough Flags (--) ^ Diffing
+```bash
+niux -Sa -- --offline       # Pass --offline to nixos-rebuild
+niux -Ha -- --show-trace    # Pass --show-trace to home-manager switch
+```
+
 ### Cleanup
 ```bash
 niux --clear                # Run nix-collect-garbage
@@ -290,6 +296,7 @@ actions {
 | `--show-path` | Show configuration path |
 | `--clear` | Run garbage collection |
 | `--search`| Search packages in nixpkgs (for autocompletion) |
+| `--` | Pass raw flags directly to `Nix` commands |
 
 ## Contributing
 
