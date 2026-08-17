@@ -6,14 +6,14 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4.6.0", features = ["derive", "string"] }
-knuffel = "3.2.0"
+knuffel = { git = "https://github.com/sayavc/knuffel" }
 dirs = "6.0.0"
 tempfile = "3.27.0"
 colored = "3.1.1"
 shell-words = "1.1.0"
 pretty_env_logger = "0.5.0"
 log = "0.4.29"
-miette = { version = "5.10", features = ["fancy"] }
+miette = { version = "7.6.0", features = ["fancy"] }
 git-version = "0.3.9"
 serde_json = "1.0.151"
 rustix = { version = "1.1.4", features = ["process"] }
