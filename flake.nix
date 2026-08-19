@@ -27,7 +27,12 @@
           '';
 
           src = ./.;
-          cargoLock.lockFile = ./Cargo.lock;
+          cargoLock = {
+              lockFile = ./Cargo.lock;
+              outputHashes = {
+                  "knuffel-3.2.0" = "sha256-G9iO/qLAoN67vTB15d10LZG10yoFssNS2yVTDEtVRQY=";
+              };
+          };
 
           env = {
               NIUX_BUILD_COMMIT = if (self ? rev) then builtins.substring 0 7 self.rev else "dirty";
