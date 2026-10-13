@@ -9,10 +9,10 @@ use std::path::PathBuf;
 use std::process;
 use tempfile::NamedTempFile;
 pub trait BashType {
-    fn otype(first: &str) -> crate::NiuxResult<Cow<'_, str>>;
+    fn otype(first: &str) -> Result<Cow<'_, str>, crate::InputErr>;
 }
 impl BashType for Just {
-    fn otype(first: &str) -> crate::NiuxResult<Cow<'_, str>> {
+    fn otype(first: &str) -> Result<Cow<'_, str>, crate::InputErr> {
         if first == "sudo" {
             Ok(Cow::Borrowed(&NiuxConfig::get().environment.su_type))
         } else {
@@ -22,7 +22,7 @@ impl BashType for Just {
 }
 
 impl BashType for Early {
-    fn otype(first: &str) -> crate::NiuxResult<Cow<'_, str>> {
+    fn otype(first: &str) -> Result<Cow<'_, str>, crate::InputErr> {
         if first == "sudo" {
             Ok(Cow::Owned(get_privilege_type()?))
         } else {
@@ -31,7 +31,7 @@ impl BashType for Early {
     }
 }
 
-pub fn run_bash_interactive<T>(args: &[&str]) -> crate::NiuxResult<()>
+pub fn run_bash_interactive<T>(args: &[&str]) -> Result<(), crate::ExecuteErr>
 where
     T: BashType,
 {
@@ -45,8 +45,7 @@ where
         return Err(crate::ExecuteErr::ExitStatus {
             code: status.code().unwrap_or(-1),
             command: args.join(" "),
-        }
-        .into());
+        });
     }
     Ok(())
 }
@@ -136,7 +135,7 @@ pub fn write_changes_to_config(content: &str, dest_path: PathBuf) -> crate::Niux
     Ok(())
 }
 
-pub fn user_input() -> crate::NiuxResult<String> {
+pub fn user_input() -> Result<String, crate::InputErr> {
     let mut user_input = String::new();
     print!("> ");
     std::io::Write::flush(&mut std::io::stdout()).ok();
@@ -215,7 +214,7 @@ impl NiuxConfig {
     }
 }
 
-pub fn get_privilege_type() -> crate::NiuxResult<String> {
+pub fn get_privilege_type() -> Result<String, crate::InputErr> {
     for su in &["doas", "sudo", "run0", "pkexec"] {
         if command_exists(su) {
             return Ok(su.to_string());

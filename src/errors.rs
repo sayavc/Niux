@@ -81,7 +81,7 @@ pub enum CliErr {
     TargetsRestriction,
 
     #[error("Extra args cannot be used with `both`")]
-    #[diagnostic(help("rebuild home or system separately to pass additional argument"))]
+    #[diagnostic(help("rebuild home or system separately to pass additional arguments"))]
     ExtraArgBadUsage,
 }
 
@@ -91,7 +91,7 @@ pub enum EnvErr {
     #[diagnostic(help("set the `{name}` environment variable and try again"))]
     NotPresent { name: String },
 
-    #[error("environment variable `{name}` contains invalid UTF-8")]
+    #[error("Environment variable `{name}` contains invalid UTF-8")]
     #[diagnostic(help("ensure that `{name}` contains valid UTF-8"))]
     NotUnicode { name: String },
 }
@@ -121,6 +121,13 @@ pub enum ExecuteErr {
     Io {
         #[source]
         e: std::io::Error,
+    },
+    #[error("Failed to get user input")]
+    InputErr {
+        #[source]
+        #[diagnostic_source]
+        #[from]
+        e: InputErr
     },
     #[error("Command exited unsuccessfully\n(exit code: {code})\n(command: {command})")]
     #[diagnostic(help("check the command output for more information"))]
@@ -177,12 +184,22 @@ pub enum ConfigErr {
     #[error("Invalid signature: {sig}")]
     #[diagnostic(help("ensure that the signature in your Niux configuration is valid"))]
     InvalidSig { sig: String },
+
+    #[error("Failed to run editor `{editor}`")]
+    #[diagnostic(help("make sure `{editor}` is installed and configured correctly in your PATH"))]
+    EditorErr { 
+        editor: String,
+
+        #[source]
+        #[diagnostic_source]
+        e: ExecuteErr
+    }
 }
 
 #[derive(Debug, thiserror::Error, miette::Diagnostic)]
 pub enum NixConfigErr {
     #[error("Marker not found: [{marker}]")]
-    #[diagnostic(help("ensure that config paths in the Niux configuration is valid"))]
+    #[diagnostic(help("ensure that config path in the Niux configuration is valid"))]
     MarkerNotFound { marker: String },
     #[error("Failed to determine indentation")]
     #[diagnostic(help("ensure that Nix config is valid"))]

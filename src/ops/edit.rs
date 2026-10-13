@@ -34,7 +34,7 @@ impl Package {
         run_bash_interactive::<Just>(&[
             &config.environment.editor,
             tmp.path().to_str().ok_or(crate::Utf8Err::InvalidUtf8)?,
-        ])?;
+        ]).map_err(|e| crate::ConfigErr::EditorErr { editor: config.environment.editor.clone(), e })?;
 
         let new = std::fs::read_to_string(tmp.path())
             .map_err(|e| crate::TmpErr::Read { e })
