@@ -1,0 +1,10 @@
+[package]
+name = "niux-writer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap.workspace = true
+miette.workspace = true
+rustix = { version = "1.1.4", features = ["process"] }
+thiserror.workspace = true
