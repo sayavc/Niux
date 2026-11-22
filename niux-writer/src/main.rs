@@ -1,10 +1,13 @@
-mod errors;
 mod cli;
+mod errors;
 
 use clap::Parser;
 use std::{fs, os::unix::fs::MetadataExt, path::PathBuf};
 
-use crate::{cli::{Cli, Commands}, errors::{NiuxWriterError, NiuxWriterResult}};
+use crate::{
+    cli::{Cli, Commands},
+    errors::{NiuxWriterError, NiuxWriterResult},
+};
 
 fn main() {
     let args = Cli::parse();

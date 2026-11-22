@@ -1,15 +1,15 @@
-use knuffel;
+use knus::Decode;
 
-#[derive(knuffel::Decode)]
+#[derive(Decode)]
 pub struct HookConfig {
-    #[knuffel(children(name = "actions"))]
+    #[knus(children(name = "actions"))]
     pub actions: Vec<Actions>,
 }
 
-#[derive(knuffel::Decode)]
+#[derive(Decode)]
 pub struct Actions {
-    #[knuffel(child, unwrap(argument))]
+    #[knus(child, unwrap(argument))]
     pub action: String,
-    #[knuffel(child, unwrap(argument))]
+    #[knus(child, unwrap(argument))]
     pub run: String,
 }

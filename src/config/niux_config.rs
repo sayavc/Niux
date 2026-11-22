@@ -67,7 +67,7 @@ impl NiuxConfig {
             .map_err(|e| crate::ConfigIoErr::read(cfg.config_path.clone(), e))
             .map_err(crate::IoErr::from)?;
 
-        match knuffel::parse::<Self>(
+        match knus::parse::<Self>(
             &cfg.config_path
                 .file_name()
                 .unwrap_or_default()

@@ -48,7 +48,7 @@ impl HookConfig {
             .map_err(|e| crate::ConfigIoErr::read(cfg.hooks_config_path.clone(), e))
             .map_err(crate::IoErr::from)?;
 
-        match knuffel::parse::<Self>(
+        match knus::parse::<Self>(
             &cfg.hooks_config_path
                 .file_name()
                 .unwrap_or_default()

@@ -72,6 +72,10 @@ pub struct Args {
         num_args = 0..,
         help = "Target package names(s) or flake input(s)")]
     pub package: Option<Vec<String>>,
-    #[arg(last = true, value_name = "ARGS", help = "Append flags/arguments directly to the executed config command")]
+    #[arg(
+        last = true,
+        value_name = "ARGS",
+        help = "Append flags/arguments directly to the executed config command"
+    )]
     pub extra: Vec<String>,
 }

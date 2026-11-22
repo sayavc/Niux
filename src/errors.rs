@@ -127,7 +127,7 @@ pub enum ExecuteErr {
         #[source]
         #[diagnostic_source]
         #[from]
-        e: InputErr
+        e: InputErr,
     },
     #[error("Command exited unsuccessfully\n(exit code: {code})\n(command: {command})")]
     #[diagnostic(help("check the command output for more information"))]
@@ -187,13 +187,13 @@ pub enum ConfigErr {
 
     #[error("Failed to run editor `{editor}`")]
     #[diagnostic(help("make sure `{editor}` is installed and configured correctly in your PATH"))]
-    EditorErr { 
+    EditorErr {
         editor: String,
 
         #[source]
         #[diagnostic_source]
-        e: ExecuteErr
-    }
+        e: ExecuteErr,
+    },
 }
 
 #[derive(Debug, thiserror::Error, miette::Diagnostic)]

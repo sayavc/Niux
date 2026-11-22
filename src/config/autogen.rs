@@ -62,7 +62,7 @@ impl AutoGenNiuxConfig {
             })
             .map_err(crate::IoErr::from)?;
 
-        match knuffel::parse::<Self>("niux_autogen.kdl", &content) {
+        match knus::parse::<Self>("niux_autogen.kdl", &content) {
             Ok(parsed) => Ok(parsed),
             Err(e) => {
                 let mut s = String::new();
