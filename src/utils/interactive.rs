@@ -1,6 +1,6 @@
 use crate::structures::models::Just;
 use crate::structures::{NiuxConfig, models::Commands};
-use crate::utils::common::{bash, user_input};
+use crate::utils::common::user_input;
 use colored::Colorize;
 impl NiuxConfig {
     pub fn autodetect() -> crate::NiuxResult<Commands> {
@@ -37,7 +37,8 @@ impl NiuxConfig {
         })
     }
     fn rebuild_system_command(flakes: bool) -> crate::NiuxResult<String> {
-        let hostname = bash::<Just>(&["hostname"])?;
+        let hostname = std::fs::read_to_string("/proc/sys/kernel/hostname")
+        .unwrap_or_else(|_| "hostname".to_string());
         let mut args = vec!["sudo", "nixos-rebuild", "switch"];
         let flake_arg = format!("/etc/nixos#{}", hostname);
 
